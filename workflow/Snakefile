@@ -1,0 +1,30 @@
+from snakemake.utils import min_version
+min_version('7.32.4') # this is where I started.
+
+##### define the workdir for workflow
+workdir: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/results"
+
+##### setup report #####
+configfile: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/config.yaml"
+
+#report: "report/workflow.rst"
+
+##### load rules #####
+include: "rules/common.smk"
+include: "rules/qc.smk"
+include: "rules/gather_data.smk"
+include: "rules/dorado_basecalling.smk"
+include: "rules/minimap2_align.smk"
+include: "rules/methylation/methylation.smk"
+include: "rules/snv_calling/clair3.smk"
+include: "rules/snv_calling/clairS.smk"
+include: "rules/snv_calling/deepsomatic.smk"
+include: "rules/snv_calling/deepvariant.smk"
+include: "rules/snv_calling/pepper_deepvariant_margin.smk"
+include: "rules/benchmark.smk"
+
+
+##### target rules #####
+rule all:
+    input:
+        get_final_output(),

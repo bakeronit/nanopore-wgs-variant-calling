@@ -1,0 +1,40 @@
+## call somatic SV with long-read data using SAVANA. https://github.com/cortes-ciriano-lab/savana
+## set --length: Minimum length SV to consider (default=30),
+## set --mapq: Minimum MAPQ of reads to consider (default=5),
+## set --depth: Minumum number of supporting reads from tumour OR normal to consider variant (default=3)
+## set --buffer: Buffer to add when clustering adjacent (non-insertion) potential breakpoints (default=10)
+#####
+
+rule call_somatic_sv_savana:
+    input:
+        tumour_bam="analysis/bam/{flowcell}/{mode}/{sample_t}.bam",
+        tumour_bai="analysis/bam/{flowcell}/{mode}/{sample_t}.bam.bai",
+        normal_bam="analysis/bam/{flowcell}/{mode}/{sample_n}.bam",
+        normal_bai="analysis/bam/{flowcell}/{mode}/{sample_n}.bam.bai",
+        genome=config['reference']['file'],
+    output:
+        raw_vcf="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}_sv_breakpoints.vcf",
+        classified_vcf="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.classified.sv_breakpoints.somatic.vcf",
+        bed="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}_sv_breakpoints.bedpe",
+        tsv="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}_sv_breakpoints_read_support.tsv"
+    log:
+        "logs/savana/{flowcell}.{mode}.{sample_t}.{sample_n}.log"
+    benchmark:
+        "benchmarks/savana/{flowcell}.{mode}.{sample_t}.{sample_n}.benchmark.txt"
+    envmodules:
+        "conda-envs/savana-1.0.4"
+    params:
+        outdir="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}"
+    threads: 24
+    resources:
+        mem = 48,
+        walltime = 48
+    shell:
+        """
+        savana --tumour {input.tumour_bam} \
+        --normal {input.normal_bam} \
+        --ref {input.genome} \
+        --sample {wildcards.sample_t}.{wildcards.sample_n} \
+        --threads {threads} \
+        --outdir {params.outdir}
+        """
