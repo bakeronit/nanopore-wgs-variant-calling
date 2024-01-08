@@ -31,6 +31,9 @@ rule call_somatic_sv_savana:
         walltime = 48
     shell:
         """
+        if [ "$(ls -A {params.outdir})" ]; then   # need to make sure the outdir is empty
+            rm -f {params.outdir}/*
+        fi
         savana --tumour {input.tumour_bam} \
         --normal {input.normal_bam} \
         --ref {input.genome} \

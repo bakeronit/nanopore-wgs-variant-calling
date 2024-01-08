@@ -47,6 +47,17 @@ def get_snv_calling_output(tool):
         output = expand(( pepper_path/samples_df['flowcell_version']/'{mode}'/samples_df['sample_id']/(samples_df['sample_id'] + '.phased.vcf.gz')).unique(), mode=MODE) 
     return output
 
+def get_sv_calling_output(tool):
+    pairs = generate_paired_samples(samples_df)
+    if tool == "severus":
+        output = [f"analysis/svs/severus/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic_{pair['tumour']}.{pair['normal']}.haplotagged.vcf" for pair in pairs for m in MODE]
+    if tool == "savana":
+        output = [f"analysis/svs/savana/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.sv_breakpoints.somatic.vcf" for pair in pairs for m in MODE]
+    if tool == "nanomonsv":
+        output = [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+        output += [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+    return output
+
 def get_final_output():
     ## step1: gather data
     #final_output = ("raw_pod5/" + samples_df['flowcell'] + '/' + samples_df['sample_id'] + '/' + samples_df['run_id'] + '.done')
@@ -70,12 +81,19 @@ def get_final_output():
     mod_output = expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '.bed.gz').unique(), mode=MODE)
     mod_output += expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '.mod_summary.txt').unique(), mode=MODE)
 
+    ## sv output
+    pairs = generate_paired_samples(samples_df)
+    sv_output = []
+    for tool in ['severus','savana','nanomonsv']:
+        sv_output += get_sv_calling_output(tool)
+    
+
     ## benchmarks
     #final_output += expand(generate_clairS_paired_samples(samples_df, mode='{mode}', type = 'benchmark'), mode=['hac','sup'])
     #germline_df = samples_df[samples_df['type'] == 'normal']
     #final_output +=  expand(("analysis/benchmarks/snvs/germline/{caller}/" + germline_df['flowcell'] + "/{mode}/" + germline_df['sample_id'] + "/summary.txt").unique(),caller = ['clair3','pepper'], mode=['hac','sup'] )
     #final_output +=  expand("analysis/benchmarks/snvs/germline/deepvariant/R10/{mode}/COLO829_BL/summary.txt",mode=['hac','sup'])
-    final_output = mod_output + snv_output   # + sv_output + phased_output + qc_output + benchmark_output
+    final_output = mod_output + snv_output + sv_output #+ phased_output + qc_output + benchmark_output
 
     step = config['step']
     if step == 'basecalling':

@@ -2,7 +2,7 @@
 samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/samples.csv
 basecalling_mode: ['sup']
 
-step: 'snv'  ## can be basecalling, alignment, snv, all.
+step: 'all'  ## can be basecalling, alignment, snv, all.
 
 ### genome assembly with index
 reference:
@@ -48,6 +48,11 @@ pepper:
 
 severus:
     vntr: /mnt/backedup/home/jiaZ/working/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed
+
+nanomonsv:
+    misc_scripts_path: /mnt/backedup/home/jiaZ/working/local/nanomonsv_scripts
+    simple_repeat: /mnt/backedup/home/jiaZ/working/data/nanomonsv/simpleRepeat.bed.gz
+    control_panel_path: /mnt/backedup/home/jiaZ/working/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
 
 filter:
     read_qs: '10'
