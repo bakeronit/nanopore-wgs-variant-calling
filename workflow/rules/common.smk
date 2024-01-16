@@ -49,13 +49,17 @@ def get_snv_calling_output(tool):
 
 def get_sv_calling_output(tool):
     pairs = generate_paired_samples(samples_df)
-    if tool == "severus":
-        output = [f"analysis/svs/severus/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic_{pair['tumour']}.{pair['normal']}.haplotagged.vcf" for pair in pairs for m in MODE]
-    if tool == "savana":
-        output = [f"analysis/svs/savana/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.sv_breakpoints.somatic.vcf" for pair in pairs for m in MODE]
-    if tool == "nanomonsv":
-        output = [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
-        output += [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+    match tool:
+        case "severus":
+            output = [f"analysis/svs/severus/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic_{pair['tumour']}.{pair['normal']}.haplotagged.vcf" for pair in pairs for m in MODE]
+        case "savana":
+            output = [f"analysis/svs/savana/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.sv_breakpoints.somatic.vcf" for pair in pairs for m in MODE]
+        case "nanomonsv":
+            output = [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+            output += [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+        case _:
+            raise ValueError("Tool can only be severus, savana, delly and nanomonsv, check the config file")
+            return None
     return output
 
 def get_final_output():
@@ -96,17 +100,18 @@ def get_final_output():
     final_output = mod_output + snv_output + sv_output #+ phased_output + qc_output + benchmark_output
 
     step = config['step']
-    if step == 'basecalling':
-        return get_basecalling_output()
-    elif step == 'alignment':
-        return get_alignment_output()
-    elif step == 'snv':
-        return snv_output
-    elif step == 'all':
-        return final_output
-    else:
-        raise ValueError("step can only be basecalling, alignment, snv, and all.")
-        return None
+    match step:
+        case 'basecalling':
+            return get_basecalling_output()
+        case 'alignment':
+            return get_alignment_output()
+        case 'snv':
+            return snv_output
+        case 'all':
+            return final_output
+        case _:
+            raise ValueError("step can only be basecalling, alignment, snv, and all.")
+            return None
 
 ## get both cannonical and mod model files for basecalling
 def get_basecalling_models(wildcards):

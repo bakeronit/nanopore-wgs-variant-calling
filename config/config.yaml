@@ -1,8 +1,9 @@
 ### samples table
-samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/samples.csv
+#samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/samples.csv
+samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/test.csv
 basecalling_mode: ['sup']
 
-step: 'all'  ## can be basecalling, alignment, snv, all.
+step: 'alignment'  ## can be basecalling, alignment, snv, all.
 
 ### genome assembly with index
 reference:
@@ -55,7 +56,10 @@ nanomonsv:
     control_panel_path: /mnt/backedup/home/jiaZ/working/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
 
 filter:
-    read_qs: '10'
+    read_qs: 10
+    headcrop: 40
+    tailcrop: 20
+    minlen: 100
 
 gold_standard:
     somatic:

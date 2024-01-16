@@ -2,7 +2,7 @@ from snakemake.utils import min_version
 min_version('7.32.4') # this is where I started.
 
 ##### define the workdir for workflow
-workdir: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/results"
+workdir: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/test"
 
 ##### setup report #####
 configfile: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/config.yaml"
