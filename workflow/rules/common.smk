@@ -56,27 +56,20 @@ def get_sv_calling_output(tool):
             output = [f"analysis/svs/savana/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.sv_breakpoints.somatic.vcf" for pair in pairs for m in MODE]
         case "nanomonsv":
             output = [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
-            output += [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+            output += [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE]
+        case "delly":
+            output =  [f"analysis/svs/delly/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.vcf" for pair in pairs for m in MODE]
         case _:
             raise ValueError("Tool can only be severus, savana, delly and nanomonsv, check the config file")
             return None
     return output
 
 def get_final_output():
-    ## step1: gather data
-    #final_output = ("raw_pod5/" + samples_df['flowcell'] + '/' + samples_df['sample_id'] + '/' + samples_df['run_id'] + '.done')
-    
-    ## step2: basecalling
-    #basecalling_output = get_basecalling_output()
+    ## qc
+    #qc_output = expand(("analysis/qc/basecalling/" + samples_df['flowcell_version'] + "/{mode}/" +  samples_df['sample_id'] + '/' + samples_df['flowcell_id'] + '.summary.txt'), mode=MODE)
+    qc_output = expand(("analysis/qc/bam/" + samples_df['flowcell_version'] + "/{mode}/" +  samples_df['sample_id'] + '{suffix}'), mode=MODE, suffix=['.mosdepth.summary.txt','.mosdepth.global.dist.txt','.bamcov.txt']) 
 
-    ## step3: alignment
-    #alignment_output = get_alignment_output()  
-
-    ## step 3a: qc
-    #final_output = expand(("analysis/qc/basecalling/" + samples_df['flowcell'] + "/{mode}/" +  samples_df['sample_id'] + '/' + samples_df['run_id'] + '.summary.txt'), mode=['hac','sup'])
-    #final_output += expand(("analysis/qc/bam/" + samples_df['flowcell'] + "/{mode}/" +  samples_df['sample_id'] + '{suffix}'), mode=['hac','sup'], suffix=['.mosdepth.summary.txt','.mosdepth.global.dist.txt','.bamcov.txt']) 
-
-    ## step4: snv calling
+    ## snv calling
     snv_output = []
     for tool in ['clairS','deepsomatic','pepper','deepvariant']:
         snv_output += get_snv_calling_output(tool)
@@ -88,23 +81,17 @@ def get_final_output():
     ## sv output
     pairs = generate_paired_samples(samples_df)
     sv_output = []
-    for tool in ['severus','savana','nanomonsv']:
+    for tool in ['severus','savana','nanomonsv','delly']:
         sv_output += get_sv_calling_output(tool)
     
-
-    ## benchmarks
-    #final_output += expand(generate_clairS_paired_samples(samples_df, mode='{mode}', type = 'benchmark'), mode=['hac','sup'])
-    #germline_df = samples_df[samples_df['type'] == 'normal']
-    #final_output +=  expand(("analysis/benchmarks/snvs/germline/{caller}/" + germline_df['flowcell'] + "/{mode}/" + germline_df['sample_id'] + "/summary.txt").unique(),caller = ['clair3','pepper'], mode=['hac','sup'] )
-    #final_output +=  expand("analysis/benchmarks/snvs/germline/deepvariant/R10/{mode}/COLO829_BL/summary.txt",mode=['hac','sup'])
-    final_output = mod_output + snv_output + sv_output #+ phased_output + qc_output + benchmark_output
+    final_output = mod_output + snv_output + sv_output + qc_output
 
     step = config['step']
     match step:
         case 'basecalling':
             return get_basecalling_output()
         case 'alignment':
-            return get_alignment_output()
+            return get_alignment_output() + qc_output
         case 'snv':
             return snv_output
         case 'all':

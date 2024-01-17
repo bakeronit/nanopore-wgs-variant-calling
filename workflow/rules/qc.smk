@@ -1,4 +1,6 @@
-script="/mnt/backedup/home/jiaZ/working/bioprojects/nanopore_celllines_benchmark/snakemake-workflow/scripts"
+script = "../scripts"
+bamcov = config['bamcov']
+
 rule bc_summary:
     input:
         "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.ubam"
@@ -8,7 +10,7 @@ rule bc_summary:
     threads: 1
     resources:
         mem = 10,
-        walltime = 4
+        walltime = 10
     shell:
         """
         {DORADO} summary {input} > {output.summary}
@@ -26,7 +28,7 @@ rule bam_stats:
     threads: 4
     resources:
         mem = 10,
-        walltime = 4
+        walltime = 10
     envmodules:
         "mosdepth/0.2.9"
     shell:
@@ -42,8 +44,8 @@ rule bam_cov:
     threads: 1
     resources:
         mem = 10,
-        walltime = 4
+        walltime = 10
     shell:
         """
-        /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov {input} -o {output}
+        {bamcov} -H {input} -o {output}
         """

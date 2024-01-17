@@ -2,12 +2,15 @@ from snakemake.utils import min_version
 min_version('7.32.4') # this is where I started.
 
 ##### define the workdir for workflow
-workdir: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/test"
+workdir: "../test"
 
 ##### setup report #####
-configfile: "/mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/config.yaml"
+configfile: "../config/config.yaml"
 
 #report: "report/workflow.rst"
+
+localrules:
+    all,
 
 ##### load rules #####
 include: "rules/common.smk"
@@ -24,7 +27,7 @@ include: "rules/snv_calling/pepper_deepvariant_margin.smk"
 include: "rules/sv_calling/severus.smk"
 include: "rules/sv_calling/savana.smk"
 include: "rules/sv_calling/nanomonsv.smk"
-include: "rules/benchmark.smk"
+include: "rules/sv_calling/delly_lr.smk"
 
 
 ##### target rules #####
