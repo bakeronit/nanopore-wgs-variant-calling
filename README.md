@@ -1,6 +1,7 @@
 ## Snakemake workflow: nanopore\_paired\_tumour\_workflow
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥7.32.4-brightgreen.svg)](https://snakemake.github.io)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
 This workflow performs variant calling using nanopore data of tumour and paired normal samples.
 
