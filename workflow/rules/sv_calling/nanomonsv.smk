@@ -65,8 +65,10 @@ rule nanomonsv_filter_simple_repeat_svtype:
 
 rule call_somatic_sv_nanomonsv_get:
     input:
-        [f"analysis/svs/nanomonsv/{{flowcell}}/{{mode}}/{{sample_t}}/{{sample_t}}.{type}.sorted.bed.gz" for type in ['bp_info','deletion','insertion','rearrangement']],
-        [f"analysis/svs/nanomonsv/{{flowcell}}/{{mode}}/{{sample_n}}/{{sample_n}}.{type}.sorted.bed.gz" for type in ['bp_info','deletion','insertion','rearrangement']],
+        [f"analysis/svs/nanomonsv/{{flowcell}}/{{mode}}/{{sample_t}}/{{sample_t}}.{type}.sorted.bed.gz" for type in ['bp_info','deletion','insertion']],
+        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}/{sample_t}.rearrangement.sorted.bedbp.gz",
+        [f"analysis/svs/nanomonsv/{{flowcell}}/{{mode}}/{{sample_n}}/{{sample_n}}.{type}.sorted.bed.gz" for type in ['bp_info','deletion','insertion']],
+        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_n}/{sample_n}.rearrangement.sorted.bedbp.gz",
         genome = config['reference']['file'],
         tumour_bam = "analysis/bam/{flowcell}/{mode}/{sample_t}.bam",
         tumour_bai = "analysis/bam/{flowcell}/{mode}/{sample_t}.bam.bai",
@@ -100,11 +102,8 @@ rule nanomonsv_parse:
         "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.bp_info.sorted.bed.gz",
         "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.bp_info.sorted.bed.gz.tbi",
         "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.deletion.sorted.bed.gz",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.deletion.sorted.bed.gz.tbi",
         "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.insertion.sorted.bed.gz",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.insertion.sorted.bed.gz.tbi",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.rearrangement.sorted.bed.gz",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.rearrangement.sorted.bed.gz.tbi",
+        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.rearrangement.sorted.bedpe.gz",
     params:
         prefix="analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}"
     threads: 1

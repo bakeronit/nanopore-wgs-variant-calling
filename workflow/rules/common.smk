@@ -5,7 +5,8 @@ import sys
 samples_df = pd.read_csv(config['samples'])
 
 wildcard_constraints:
-    sample="|".join(samples_df["sample_id"])
+    sample="|".join(samples_df["sample_id"]),
+    run="|".join(samples_df["flowcell_id"])
 
 MODE = config['basecalling_mode']
 
@@ -91,7 +92,7 @@ def get_final_output():
         case 'basecalling':
             return get_basecalling_output()
         case 'alignment':
-            return get_alignment_output() + qc_output
+            return get_alignment_output() + qc_output + mod_output
         case 'snv':
             return snv_output
         case 'all':
