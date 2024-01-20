@@ -3,7 +3,7 @@
 samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/test.csv
 basecalling_mode: ['sup']
 
-step: 'alignment'  ## can be basecalling, alignment, snv, all.
+step: 'all'  ## can be basecalling, alignment, snv, all.
 
 ### genome assembly with index
 reference:
@@ -41,8 +41,8 @@ clairS:
         R10: ont_r10_dorado_5khz
 
 deepvariant: 
-    gpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant-gpu-1.6.0.sif
-    cpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant-1.6.0.sif
+    gpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant_v1.6.0-gpu.sif
+    cpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant_1.6.0.sif
 
 pepper: 
     sif: /mnt/backedup/home/jiaZ/working/imgs/pepper_deepvariant_r0.8.sif
@@ -60,7 +60,7 @@ delly:
     bed:
 
 filter:
-    trim: False
+    trim: True
     read_qs: 10
     headcrop: 40
     tailcrop: 20

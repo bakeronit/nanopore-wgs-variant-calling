@@ -5,8 +5,8 @@ import sys
 samples_df = pd.read_csv(config['samples'])
 
 wildcard_constraints:
-    sample="|".join(samples_df["sample_id"]),
-    run="|".join(samples_df["flowcell_id"])
+    sample="|".join(samples_df["sample_id"].unique()),
+    run="|".join(samples_df["flowcell_id"].unique())
 
 MODE = config['basecalling_mode']
 
@@ -52,11 +52,11 @@ def get_sv_calling_output(tool):
     pairs = generate_paired_samples(samples_df)
     match tool:
         case "severus":
-            output = [f"analysis/svs/severus/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic_{pair['tumour']}.{pair['normal']}.haplotagged.vcf" for pair in pairs for m in MODE]
+            output = [f"analysis/svs/severus/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic_{pair['tumour']}.haplotagged.vcf" for pair in pairs for m in MODE]
         case "savana":
-            output = [f"analysis/svs/savana/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.sv_breakpoints.somatic.vcf" for pair in pairs for m in MODE]
+            output = [f"analysis/svs/savana/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.somatic.vcf" for pair in pairs for m in MODE]
         case "nanomonsv":
-            output = [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE] 
+            output = [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.result.filt.pass.svtype.txt" for pair in pairs for m in MODE]
             output += [f"analysis/svs/nanomonsv/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in pairs for m in MODE]
         case "delly":
             output =  [f"analysis/svs/delly/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.vcf" for pair in pairs for m in MODE]
@@ -150,24 +150,3 @@ def get_clair3_model(wildcards):
         exit(0)
     
     return clair3_model
-    
-def generate_clairS_paired_samples(df, mode, type = 'snv'):
-    donor_flowcell_df = df[['donor_id','flowcell_version']].drop_duplicates()
-    clairs_outputs = []
-    for index, row in donor_flowcell_df.iterrows():
-        donor_id = row['donor_id']
-        flowcell = row['flowcell_version']
-
-        tumour_sample = df[(df['donor_id'] == donor_id) & (df['flowcell_version'] == flowcell) & (df['type'] == 'tumour')]['sample_id'].unique().tolist()
-        normal_sample = df[(df['donor_id'] == donor_id) & (df['flowcell_version'] == flowcell) & (df['type'] == 'normal')]['sample_id'].unique().tolist()
-
-        if type == 'snv':
-            clairs_outputs += [f"analysis/snvs/clairS/{flowcell}/{mode}/{tumour_sample[0]}.{normal_sample[0]}/output.vcf.gz"]
-        else: ## type = 'benchmark'
-            clairs_outputs += [f"analysis/benchmarks/snvs/somatic/clairS/{flowcell}/{mode}/{tumour_sample[0]}.{normal_sample[0]}/fp_fn.vcf"]
-            clairs_outputs += [f"analysis/benchmarks/snvs/somatic/clairS/{flowcell}/{mode}/{tumour_sample[0]}.{normal_sample[0]}/fp.vcf"]
-            clairs_outputs += [f"analysis/benchmarks/snvs/somatic/clairS/{flowcell}/{mode}/{tumour_sample[0]}.{normal_sample[0]}/summary.txt"]
-            clairs_outputs += [f"analysis/benchmarks/snvs/somatic/clairS/{flowcell}/{mode}/{tumour_sample[0]}.{normal_sample[0]}/tp.vcf"]
-            clairs_outputs += [f"analysis/benchmarks/snvs/somatic/clairS/{flowcell}/{mode}/{tumour_sample[0]}.{normal_sample[0]}/fn.vcf"]
-
-    return clairs_outputs

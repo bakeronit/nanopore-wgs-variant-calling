@@ -15,6 +15,7 @@ rule align_minimap2:
         mem = 36,
         walltime = 2
     params:
+        qs = config['filter']['read_qs'],
         rg = "\"@RG\\tID:{sample}.{run}\\tPL:ONT\\tSM:{sample}\""
     benchmark:
         "benchmarks/minimap2/{flowcell}.{sample}.{run}.{mode}.benchmark.txt"
@@ -22,7 +23,8 @@ rule align_minimap2:
         "logs/minimap2/{flowcell}.{sample}.{run}.{mode}.log"
     shell: 
         """
-        samtools fastq -@8 -T "*" {input.ubam} | \
+        samtools view -e '[qs] >= {params.qs}' {input.ubam} | \
+        samtools fastq -@8 -T "*" | \
             minimap2 -R {params.rg} \
             -y --MD -ax map-ont -t {threads} {input.genome} - | \
             samtools sort -@8 -O BAM --write-index -o {output.bam}##idx##{output.bai} - &>{log}

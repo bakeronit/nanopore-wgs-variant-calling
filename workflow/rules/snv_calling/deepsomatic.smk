@@ -18,7 +18,7 @@ rule call_somatic_snv_deepsomatic:
         "singularity/3.7.1"
     resources:
         mem=30,
-        walltime=48
+        walltime=200
     shell:
         """
         singularity exec {DP_somatic_sif} /opt/deepvariant/bin/run_deepsomatic \

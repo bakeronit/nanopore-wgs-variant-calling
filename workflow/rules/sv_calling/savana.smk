@@ -13,10 +13,11 @@ rule call_somatic_sv_savana:
         normal_bai="analysis/bam/{flowcell}/{mode}/{sample_n}.bam.bai",
         genome=config['reference']['file'],
     output:
-        raw_vcf="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}_sv_breakpoints.vcf",
-        classified_vcf="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.classified.sv_breakpoints.somatic.vcf",
-        bed="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}_sv_breakpoints.bedpe",
-        tsv="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}_sv_breakpoints_read_support.tsv"
+        "analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.sv_breakpoints.bedpe",
+        "analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.sv_breakpoints_read_support.tsv",
+        "analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.sv_breakpoints.vcf",
+        "analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.classified.sv_breakpoints.vcf",
+        "analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.classified.somatic.vcf"
     log:
         "logs/savana/{flowcell}.{mode}.{sample_t}.{sample_n}.log"
     benchmark:
@@ -27,7 +28,7 @@ rule call_somatic_sv_savana:
         outdir="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}"
     threads: 24
     resources:
-        mem = 48,
+        mem = 200,
         walltime = 48
     shell:
         """

@@ -6,14 +6,23 @@
 rule call_somatic_sv_severus:
     input:
         phased_tumour_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam", 
-        phased_normal_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam", 
+        phased_normal_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam",
+        phased_tumour_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam.bai", 
+        phased_normal_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam.bai",
         phased_vcf = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}/phased_merge_output.vcf.gz",
         vntr_bed = config['severus']['vntr']
     output:
-        "analysis/svs/severus/{flowcell}/{mode}/{sample_t}.{sample_n}/somatic_SVs/severus_somatic_{sample_t}.{sample_n}.haplotagged.vcf"
+        "analysis/svs/severus/{flowcell}/{mode}/{sample_t}.{sample_n}/somatic_SVs/severus_somatic_{sample_t}.haplotagged.vcf"
+    log:
+        "logs/severus/{flowcell}.{sample_t}.{sample_n}.{flowcell}.{mode}.log"
+    benchmark:
+        "benchmarks/severus/{flowcell}.{sample_t}.{sample_n}.{flowcell}.{mode}.txt"
     params:
-        outdir = "analysis/sv/severus/{flowcell}/{mode}/{sample_t}.{sample_n}"    
+        outdir = "analysis/svs/severus/{flowcell}/{mode}/{sample_t}.{sample_n}"    
     threads: 20
+    resources:
+        mem = 64,
+        walltime = 48
     envmodules:
         "conda-envs/severus-0.1.1"
     shell:
@@ -23,5 +32,22 @@ rule call_somatic_sv_severus:
             --out-dir {params.outdir} \
             --threads {threads} \
             --vntr-bed {input.vntr_bed} \
-            --phasing-vcf {input.phased_vcf}
+            --phasing-vcf {input.phased_vcf} &>{log}
+        """
+
+
+rule index_haplotagged_bam:
+    input:
+        "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam",
+    output:
+        "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam.bai"
+    threads: 8
+    resources:
+        mem = 10,
+        walltime = 8
+    envmodules:
+        "samtools/1.17"
+    shell:
+        """
+        samtools index -@8 {input}
         """

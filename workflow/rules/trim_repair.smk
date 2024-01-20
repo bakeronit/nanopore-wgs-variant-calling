@@ -1,7 +1,7 @@
 # trim the heading of 40bp and tailing of 20bp for each read.
 # after trimmming, need to fix the MM tag.
 
-MODKIT = config['modkit']
+modkit = config['modkit']
 rule trim_reads:
     input:
         "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.ubam"
@@ -14,15 +14,13 @@ rule trim_reads:
     envmodules:
         "samtools/1.17"
     params:
-        qs = config['filter']['read_qs'],
         headcrop = config['filter']['headcrop'],
         tailcrop = config['filter']['tailcrop'],
         minlen = config['filter']['minlen'],
     shell:
         """
-        samtools view -e '[qs] >= {params.qs}' {input} | \
-        samtools fastq -T"MM,ML" | \
-        chopper --headcrop {params.headcrop} --tailcrop {params.tailcrop} -l {params.minlen} --threads {threads} | \
+        samtools fastq -T"MM,ML,qs" {input} | \
+        chopper --headcrop {params.headcrop} --tailcrop {params.tailcrop} --minlength {params.minlen} --threads {threads} | \
         samtools import -T"*" - | \
         samtools sort -@{threads} -n > {output}
         """
@@ -50,10 +48,10 @@ rule repair_MMtag:
     output:
         temp("analysis/ubam/{flowcell}/{mode}/{sample}/{run}.trimmed_repaired.ubam")
     resources:
-        mem = 10,
+        mem = 20,
         walltime = 10
     threads: 1
     shell:
         """
-        {MODKIT} repair -d {input.original} -a {input.trimmed} -o {output}
+        {modkit} repair -d {input.original} -a {input.trimmed} -o {output}
         """
