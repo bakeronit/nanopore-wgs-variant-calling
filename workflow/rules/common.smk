@@ -135,8 +135,9 @@ def get_bam_of_runs(wildcards):
     mode = wildcards.mode
 
     align_results_path = Path(f'analysis/bam/{flowcell}/{mode}/{sample}')
-    flowcell_ids = list(samples_df[ (samples_df['flowcell_version'] == flowcell) & (samples_df['sample_id'] == sample) ].flowcell_id)
-
+    flowcell_ids = set(samples_df[ (samples_df['flowcell_version'] == flowcell) & (samples_df['sample_id'] == sample) ].flowcell_id)
+    print(flowcell_ids)
+    print([align_results_path / f'{id}.bam' for id in flowcell_ids])
     return [align_results_path / f'{id}.bam' for id in flowcell_ids]
 
 ## get model file for clair3 snp calling
