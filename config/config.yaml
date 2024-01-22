@@ -32,7 +32,7 @@ ont_model:
 clair3:
     sif: /mnt/backedup/home/jiaZ/working/imgs/clair3_v1.0.5.sif
     model_r9: /opt/models/r941_prom_sup_g5014    ## clair3 suggests to use sup for hac data
-    model_r10: /mnt/backedup/home/jiaZ/working/data/ont_models/clair3_models/r1041_e82_400bps_sup_v420
+    model_r10: /mnt/backedup/home/jiaZ/working/data/ont_models/clair3_models/r1041_e82_400bps_sup_v430
 
 clairS:
     sif: /mnt/backedup/home/jiaZ/working/imgs/clairs_v0.1.6.sif

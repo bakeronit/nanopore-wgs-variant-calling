@@ -28,8 +28,8 @@ rule call_somatic_sv_savana:
         outdir="analysis/svs/savana/{flowcell}/{mode}/{sample_t}.{sample_n}"
     threads: 24
     resources:
-        mem = 200,
-        walltime = 48
+        mem = 240,
+        walltime = 24
     shell:
         """
         if [ "$(ls -A {params.outdir})" ]; then   # need to make sure the outdir is empty

@@ -5,9 +5,9 @@
 
 rule call_somatic_sv_severus:
     input:
-        phased_tumour_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam", 
-        phased_normal_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam",
-        phased_tumour_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam.bai", 
+        hp_tagged_tumour_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam", 
+        hp_tagged_normal_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam",
+        hp_tagged_tumour_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam.bai", 
         phased_normal_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam.bai",
         phased_vcf = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}/phased_merge_output.vcf.gz",
         vntr_bed = config['severus']['vntr']
@@ -27,8 +27,8 @@ rule call_somatic_sv_severus:
         "conda-envs/severus-0.1.1"
     shell:
         """
-        severus --target-bam {input.phased_tumour_bam} \
-            --control-bam {input.phased_normal_bam} \
+        severus --target-bam {input.hp_tagged_tumour_bam} \
+            --control-bam {input.hp_tagged_normal_bam} \
             --out-dir {params.outdir} \
             --threads {threads} \
             --vntr-bed {input.vntr_bed} \

@@ -14,10 +14,10 @@ rule call_germline_snv_deepvariant:
         "logs/deepvariant/{flowcell}.{mode}.{sample}.log"
     benchmark:
         "benchmarks/deepvariant/{flowcell}.{mode}.{sample}.benchmark.txt"
-    threads: 12
+    threads: 24
     resources:
         nvidia_gpu = 1,
-        mem = 48,
+        mem = 64,
         walltime = 48
     envmodules:
         "singularity/3.7.1"

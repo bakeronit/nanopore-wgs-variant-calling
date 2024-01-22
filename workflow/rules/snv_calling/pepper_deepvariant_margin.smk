@@ -19,7 +19,7 @@ rule call_germline_snv_pepper:
         "benchmarks/pepper/{flowcell}.{mode}.{sample}.benchmark.txt"
     threads: 24
     resources:
-        mem = 60,
+        mem = 64,
         walltime = 48
     envmodules:
         "singularity/3.7.1"

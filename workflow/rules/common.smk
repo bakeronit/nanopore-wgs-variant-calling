@@ -78,6 +78,8 @@ def get_final_output():
     ## methylation
     mod_output = expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '.bed.gz').unique(), mode=MODE)
     mod_output += expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '.mod_summary.txt').unique(), mode=MODE)
+    mod_output += expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '_1.bed.gz').unique(), mode=MODE)
+    mod_output += expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '_2.bed.gz').unique(), mode=MODE)
 
     ## sv output
     pairs = generate_paired_samples(samples_df)
@@ -136,8 +138,6 @@ def get_bam_of_runs(wildcards):
 
     align_results_path = Path(f'analysis/bam/{flowcell}/{mode}/{sample}')
     flowcell_ids = set(samples_df[ (samples_df['flowcell_version'] == flowcell) & (samples_df['sample_id'] == sample) ].flowcell_id)
-    print(flowcell_ids)
-    print([align_results_path / f'{id}.bam' for id in flowcell_ids])
     return [align_results_path / f'{id}.bam' for id in flowcell_ids]
 
 ## get model file for clair3 snp calling

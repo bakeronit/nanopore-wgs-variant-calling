@@ -13,7 +13,7 @@ rule call_somatic_snv_deepsomatic:
         "benchmarks/deepsomatic/{flowcell}.{mode}.{sample_t}.{sample_n}.benchmark.txt"
     params:
         model="/mnt/backedup/home/jiaZ/working/data/ont_models/dpsomatic_model/weights-143-0.987994.ckpt"
-    threads: 12
+    threads: 48
     envmodules:
         "singularity/3.7.1"
     resources:
