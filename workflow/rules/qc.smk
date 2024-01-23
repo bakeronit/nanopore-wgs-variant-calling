@@ -28,7 +28,7 @@ rule bam_stats:
     threads: 4
     resources:
         mem = 10,
-        walltime = 10
+        walltime = 12
     envmodules:
         "mosdepth/0.2.9"
     shell:
@@ -44,7 +44,7 @@ rule bam_cov:
     threads: 1
     resources:
         mem = 10,
-        walltime = 10
+        walltime = 12
     shell:
         """
         {bamcov} -H {input} -o {output}

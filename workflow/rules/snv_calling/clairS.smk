@@ -12,7 +12,7 @@ rule call_somatic_snv_clairS:
     params:
         platform = lambda w: config['clairS']['platform'][w.flowcell],
         outdir = "analysis/snvs/clairS/{flowcell}/{mode}/{sample_t}.{sample_n}",
-        clair3_model = "lambda w: config['clair3']['model_r10'] if w.flowcell == 'R10 else config['clair3']['model_r9']",
+        clair3_model = lambda w: config['clair3']['model_r10'] if w.flowcell == 'R10' else config['clair3']['model_r9'],
         indel_option = lambda w: "--enable_indel_calling" if w.flowcell == 'R10' else ""   # indel calling currently only available for R10 data.
     log:
         "logs/clairS/{flowcell}.{mode}.{sample_t}.{sample_n}.log"

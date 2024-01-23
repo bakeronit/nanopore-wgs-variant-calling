@@ -46,7 +46,7 @@ rule modsummary:
         {modkit} summary -t {threads} {input.bam} --log-filepath {log} > {output}
         """
 
-rule phased_mod:
+rule bamtohapmod:
     input:
         hp_tagged_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam",
         hp_tagged_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam.bai",
@@ -56,10 +56,11 @@ rule phased_mod:
         "analysis/mod/{flowcell}/{mode}/{sample}_2.bed.gz",
         "analysis/mod/{flowcell}/{mode}/{sample}_1.bed.gz.tbi",
         "analysis/mod/{flowcell}/{mode}/{sample}_2.bed.gz.tbi",
+        "analysis/mod/{flowcell}/{mode}/{sample}_ungrouped.bed",
     params:
         outdir = "analysis/mod/{flowcell}/{mode}/",
         hp1_bed = "analysis/mod/{flowcell}/{mode}/{sample}_1.bed",
-        hp2_bed = "analysis/mod/{flowcell}/{mode}/{sample}_2.bed"
+        hp2_bed = "analysis/mod/{flowcell}/{mode}/{sample}_2.bed",
     threads: 8
     resources:
         mem = 10,
