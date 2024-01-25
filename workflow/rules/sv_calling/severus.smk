@@ -5,11 +5,11 @@
 
 rule call_somatic_sv_severus:
     input:
-        hp_tagged_tumour_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam", 
-        hp_tagged_normal_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam",
-        hp_tagged_tumour_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_t}.haplotagged.bam.bai", 
-        phased_normal_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}.haplotagged.bam.bai",
-        phased_vcf = "analysis/snvs/clair3/{flowcell}/{mode}/{sample_n}/phased_merge_output.vcf.gz",
+        hp_tagged_tumour_bam = "analysis/bam/{flowcell}/{mode}/{sample_t}.haplotagged.bam", 
+        hp_tagged_normal_bam = "analysis/bam/{flowcell}/{mode}/{sample_n}.haplotagged.bam",
+        hp_tagged_tumour_bai = "analysis/bam/{flowcell}/{mode}/{sample_t}.haplotagged.bam.bai", 
+        phased_normal_bai = "analysis/bam/{flowcell}/{mode}/{sample_n}.haplotagged.bam.bai",
+        phased_vcf = lambda wildcards: get_phased_input(wildcards.sample_n, wildcards.flowcell, wildcards.mode, 'vcf'),
         vntr_bed = config['severus']['vntr']
     output:
         "analysis/svs/severus/{flowcell}/{mode}/{sample_t}.{sample_n}/somatic_SVs/severus_somatic_{sample_t}.haplotagged.vcf"
@@ -38,9 +38,10 @@ rule call_somatic_sv_severus:
 
 rule index_haplotagged_bam:
     input:
-        "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam",
+        lambda wildcards: get_phased_input(wildcards.sample, wildcards.flowcell, wildcards.mode),
     output:
-        "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam.bai"
+        bam = "analysis/bam/{flowcell}/{mode}/{sample}.haplotagged.bam",
+        bai = "analysis/bam/{flowcell}/{mode}/{sample}.haplotagged.bam.bai",
     threads: 8
     resources:
         mem = 10,
@@ -49,5 +50,6 @@ rule index_haplotagged_bam:
         "samtools/1.17"
     shell:
         """
-        samtools index -@8 {input}
+        ln -s {input} {output.bam}
+        samtools index -@8 {output.bam}
         """

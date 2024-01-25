@@ -14,7 +14,7 @@ rule call_germline_snv_deepvariant:
         "logs/deepvariant/{flowcell}.{mode}.{sample}.log"
     benchmark:
         "benchmarks/deepvariant/{flowcell}.{mode}.{sample}.benchmark.txt"
-    threads: 24
+    threads: 12 ## use 12 so a 4-GPUs nodes(with 52 CPUs) can run 4 jobs a time, I don't like 13 so.
     resources:
         nvidia_gpu = 1,
         mem = 64,
@@ -41,11 +41,11 @@ rule margin_phasing:
         genome=config['reference']['file'],
         vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.vcf.gz"
     output:
-        bam="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.margin.haplotagged.bam",
-        vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.margin.phased.vcf"
+        bam="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam",
+        vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf"
     params:
         json=lambda w: 'allParams.haplotag.ont-r94g507.json' if w.flowcell == 'R9' else 'allParams.haplotag.ont-r104q20.json',
-        prefix="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.margin"
+        prefix="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}"
     log:
         "logs/deepvariant/{flowcell}.{mode}.{sample}.margin.log"
     benchmark:
@@ -58,7 +58,7 @@ rule margin_phasing:
         "singularity/3.7.1"
     shell:
         """
-        singularity run --nv {DEEPVARIANT_CPU_sif} \
+        singularity run {DEEPVARIANT_CPU_sif} \
         margin phase \
         {input.bam} {input.genome} {input.vcf} \
         {params.json} -t {threads} -o {params.prefix} | tee -a {log}

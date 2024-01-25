@@ -48,8 +48,8 @@ rule modsummary:
 
 rule bamtohapmod:
     input:
-        hp_tagged_bam = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam",
-        hp_tagged_bai = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam.bai",
+        hp_tagged_bam = "analysis/bam/{flowcell}/{mode}/{sample}.haplotagged.bam",
+        hp_tagged_bai = "analysis/bam/{flowcell}/{mode}/{sample}.haplotagged.bam.bai",
         genome = config['reference']['file'],
     output:
         "analysis/mod/{flowcell}/{mode}/{sample}_1.bed.gz",

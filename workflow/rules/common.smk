@@ -151,3 +151,16 @@ def get_clair3_model(wildcards):
         exit(0)
     
     return clair3_model
+
+def get_phased_input(sample, flowcell, mode, type="bam"):
+    match config['hptag_bam_from']:
+        case 'clair3':
+            return f"analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam" if type == "bam" else f"analysis/snvs/clair3/{flowcell}/{mode}/{sample}/phased_merge_output.vcf.gz"
+        case 'pepper':
+            return f"analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if type == "bam" else f"analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
+        case 'deepvariant':
+            return f"analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if type == "bam" else f"analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf"
+        case _:
+            raise ValueError("haplotagged bam should only be generated from clair3, pepper, or deepvariant!")
+            return None
+    
