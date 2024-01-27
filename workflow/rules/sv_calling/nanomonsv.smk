@@ -63,12 +63,14 @@ rule nanomonsv_filter_simple_repeat_svtype:
         "nanomonsv/0.7.1"
     shell:
         """
-        python3 {misc}/add_simple_repeat.py {input.result} {output.filt} {input.simple_repeat}
-
-        head -n 1 {output.filt} > {output.passed} 
-        tail -n +2 {output.filt} |grep PASS >> {output.passed}
-
-        python3 {misc}/sv_type.py {output.passed} {output.svtype}
+        if [ "$(wc -l < "{input.result}")" -gt 1 ]; then
+            python3 {misc}/add_simple_repeat.py {input.result} {output.filt} {input.simple_repeat}
+            head -n 1 {output.filt} > {output.passed} 
+            tail -n +2 {output.filt} |grep PASS >> {output.passed}
+            python3 {misc}/sv_type.py {output.passed} {output.svtype}
+        else # no sv called, usually in test data
+            touch {output}
+        fi
         """
 
 rule call_somatic_sv_nanomonsv_get:

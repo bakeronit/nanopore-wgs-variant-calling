@@ -50,6 +50,6 @@ rule index_haplotagged_bam:
         "samtools/1.17"
     shell:
         """
-        ln -s {input} {output.bam}
+        ln -sr {input} {output.bam}
         samtools index -@8 {output.bam}
         """

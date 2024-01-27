@@ -17,7 +17,6 @@ try:
 
     jsondoc = json.loads(res.stdout.decode())
     job_state = jsondoc['Jobs'][jobid]['job_state']
-
     if job_state == "F":
         exit_status = jsondoc['Jobs'][jobid]['Exit_status']
         if exit_status == 0:

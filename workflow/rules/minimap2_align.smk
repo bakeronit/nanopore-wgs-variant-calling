@@ -6,7 +6,7 @@ rule align_minimap2:
         genome = config['reference']['file']
     output:
         bam = temp("analysis/bam/{flowcell}/{mode}/{sample}/{run}.bam"),
-        bai = temp("analysis/bam/{flowcell}/{mode}/{sample}/{run}.bam.bai")
+        bai = "analysis/bam/{flowcell}/{mode}/{sample}/{run}.bam.bai"
     envmodules:
         "samtools/1.17",
         "minimap2/2.26"
@@ -44,4 +44,4 @@ rule merge_bam:
         if len(input)>1:
             shell("module load samtools/1.17 && samtools merge -@{threads} --write-index {output.bam}##idx##{output.bai} {input}")
         else:
-            shell("ln -sr {input} {output.bam} && ln -sr {input}.bai {output.bai} && touch -h {output.bam} && touch -h {output.bai}")
+            shell("mv {input} {output.bam} && mv {input}.bai {output.bai}")

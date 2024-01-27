@@ -1,4 +1,4 @@
-DP_somatic_sif = "/mnt/backedup/home/jiaZ/working/imgs/deepvariant_head561058313.sif"
+DP_somatic_sif = "/mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_head561058313.sif"
 
 rule call_somatic_snv_deepsomatic:
     input:
@@ -13,7 +13,7 @@ rule call_somatic_snv_deepsomatic:
         "benchmarks/deepsomatic/{flowcell}.{mode}.{sample_t}.{sample_n}.benchmark.txt"
     params:
         model="/mnt/backedup/home/jiaZ/working/data/ont_models/dpsomatic_model/weights-143-0.987994.ckpt"
-    threads: 48
+    threads: 24
     envmodules:
         "singularity/3.7.1"
     resources:
