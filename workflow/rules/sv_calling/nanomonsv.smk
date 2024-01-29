@@ -27,7 +27,7 @@ rule nanomonsv_postprocess_sbnd:
         walltime = 1
     envmodules:
         "nanomonsv/0.7.1",    
-        "R/4.3.1"  # need tidyverse and ggrepel
+        "R/4.3.1"  # needs tidyverse and ggrepel
     shell:
         """
         if [ "$(wc -l < "{input.sbnd_result}")" -gt 1 ]; then
@@ -41,7 +41,7 @@ rule nanomonsv_postprocess_sbnd:
             head -n 1 {output.annot} > {output.annot_pass}
             tail -n +2 {output.annot} | grep PASS >> {output.annot_pass}
             head -n 1 {output.sbnd_annot} > {output.sbnd_annot_pass}
-            tail -n +2 {output.sbnd_annot} | grep PASS >> {output.sbnd_annot_pass}
+            tail -n +2 {output.sbnd_annot} | grep PASS >> {output.sbnd_annot_pass} || true ## it returns non-zero code if grep didn't find the pattern.
         else  # sbnd result might be empty
             touch {output}
         fi
@@ -66,7 +66,7 @@ rule nanomonsv_filter_simple_repeat_svtype:
         if [ "$(wc -l < "{input.result}")" -gt 1 ]; then
             python3 {misc}/add_simple_repeat.py {input.result} {output.filt} {input.simple_repeat}
             head -n 1 {output.filt} > {output.passed} 
-            tail -n +2 {output.filt} |grep PASS >> {output.passed}
+            tail -n +2 {output.filt} | grep PASS >> {output.passed}
             python3 {misc}/sv_type.py {output.passed} {output.svtype}
         else # no sv called, usually in test data
             touch {output}

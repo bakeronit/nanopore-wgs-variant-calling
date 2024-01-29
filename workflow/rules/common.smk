@@ -2,8 +2,10 @@ import pandas as pd
 from pathlib import Path
 import sys
 
-samples_df = pd.read_csv(config['samples'])
+##TODO: pick the one from germline snv callers and somatic snv callers (some takes a long time, no need to run every tool), considering merging SVs results.
 
+samples_df = pd.read_csv(config['samples'])
+samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could be numbers only.
 wildcard_constraints:
     sample="|".join(samples_df["sample_id"].unique()),
     run="|".join(samples_df["flowcell_id"].unique())
@@ -163,4 +165,3 @@ def get_phased_input(sample, flowcell, mode, type="bam"):
         case _:
             raise ValueError("haplotagged bam should only be generated from clair3, pepper, or deepvariant!")
             return None
-    
