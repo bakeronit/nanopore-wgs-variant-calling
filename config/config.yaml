@@ -10,7 +10,9 @@ reference:
     build: GRCh38
     file: /mnt/backedup/home/jiaZ/working/data/genome/reference.fasta
 
-hptag_bam_from: 'clair3'
+germline_snv_from: 'clair3'
+somatic_snv_from: 'deepsomatic'
+
 ## config for tools and models path.
 ### models for basecalling
 ont_model:
@@ -66,22 +68,8 @@ filter:
     tailcrop: 20
     minlen: 100
 
-gold_standard:
-    somatic:
-        COLO829: /working/genomeinfo/share/analysis/Waddell_-_LRS_PanCancer.wdl/VCFs/Colo-829.Colo-829.79b65d30-08ac-4111-8baf-9ca91ed692fd_vs_Colo-829.Colo-829-BL.71843404-6af6-43db-aad1-120b62d521a6.sp.vcf.gz
-        HCC1937: /working/genomeinfo/share/analysis/Waddell_-_LRS_PanCancer.wdl/VCFs/HCC1937.HCC1937.c863a327-4c69-4685-99ce-d188f09ce207_vs_HCC1937.HCC1937BL.73a8364c-9799-4e66-aa11-378b21d40a03.sp.vcf.gz
-    germline:
-        COLO829_BL: /working/genomeinfo/share/analysis/Waddell_-_LRS_PanCancer.wdl/VCFs/Colo-829.Colo-829.79b65d30-08ac-4111-8baf-9ca91ed692fd_vs_Colo-829.Colo-829-BL.71843404-6af6-43db-aad1-120b62d521a6.gp.vcf.gz
-        HCC1937_BL: /working/genomeinfo/share/analysis/Waddell_-_LRS_PanCancer.wdl/VCFs/HCC1937.HCC1937.c863a327-4c69-4685-99ce-d188f09ce207_vs_HCC1937.HCC1937BL.73a8364c-9799-4e66-aa11-378b21d40a03.gp.vcf.gz
-
-
 ## tool path: need to have them in a environment in the future.
 ### dorado path, since it updates so frequently, I will install in my own folders first.
 dorado_latest: /mnt/backedup/home/jiaZ/working/local/dorado/dorado-0.5.1-linux-x64/bin/dorado
-
 modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.2.4/modkit
-f5c: 
-    cpu: /mnt/backedup/home/jiaZ/working/local/f5c/v1.3/f5c_x86_64_linux
-    gpu: /mnt/backedup/home/jiaZ/working/local/f5c/v1.3/f5c_x86_64_linux_cuda
-
 bamcov: /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov
