@@ -1,5 +1,6 @@
 DEEPVARIANT_GPU_sif = config['deepvariant']['gpu']
 DEEPVARIANT_CPU_sif = config['deepvariant']['cpu']
+PEPPER_MARGIN_DV_sif = config['pepper']['sif']
 
 ## deepvariant only available for R10
 rule call_germline_snv_deepvariant:
@@ -41,11 +42,12 @@ rule margin_phasing:
         genome=config['reference']['file'],
         vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.vcf.gz"
     output:
-        bam="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam",
-        vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf"
+        #bam="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam",
+        vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
     params:
         json=lambda w: 'allParams.haplotag.ont-r94g507.json' if w.flowcell == 'R9' else 'allParams.haplotag.ont-r104q20.json',
-        prefix="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}"
+        prefix="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}",
+        vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf"
     log:
         "logs/deepvariant/{flowcell}.{mode}.{sample}.margin.log"
     benchmark:
@@ -55,11 +57,14 @@ rule margin_phasing:
         mem = 48,
         walltime=48
     envmodules:
-        "singularity/3.7.1"
+        "singularity/3.7.1",
+        "htslib/1.16"
     shell:
         """
-        singularity run {DEEPVARIANT_CPU_sif} \
+        singularity run {PEPPER_MARGIN_DV_sif} \
         margin phase \
         {input.bam} {input.genome} {input.vcf} \
-        {params.json} -t {threads} -o {params.prefix} | tee -a {log}
+        {params.json} -t {threads} -o {params.prefix} --skipHaplotypeBam | tee -a {log}
+
+        bgzip {params.vcf}    
         """

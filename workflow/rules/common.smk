@@ -39,15 +39,17 @@ def get_snv_calling_output(tool):
         output = [f"analysis/snvs/{tool}/{pair['flowcell_version']}/{m}/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in pairs for m in MODE]
     if tool == 'clair3':
         clair3_path = Path('analysis/snvs/clair3')
-        output = expand(( clair3_path/samples_df['flowcell_version']/'{mode}'/samples_df['sample_id']/'merge_output.vcf.gz').unique(), mode=MODE)
+        normal_samples_df = samples_df[samples_df['type']=='normal']
+        output = expand(( clair3_path/normal_samples_df['flowcell_version']/'{mode}'/normal_samples_df['sample_id']/'merge_output.vcf.gz').unique(), mode=MODE)
     if tool == 'deepvariant':
-        deepvariant_path= Path('analysis/snvs/deepvariant/R10')  # deepvariant only works with R10 data.
-        samples_r10_df = samples_df[samples_df['flowcell_version']=='R10']
-        output = expand(( deepvariant_path/'{mode}'/samples_r10_df['sample_id']/(samples_r10_df['sample_id'] + ".vcf.gz")).unique(), mode=MODE)
-        output += expand(( deepvariant_path/'{mode}'/samples_r10_df['sample_id']/(samples_r10_df['sample_id'] + ".g.vcf.gz")).unique(), mode=MODE)
+        deepvariant_path = Path('analysis/snvs/deepvariant/R10')  # deepvariant only works with R10 data.
+        normal_samples = samples_df[(samples_df['flowcell_version']=='R10') & (samples_df['type']=='normal')]['sample_id']
+        output = expand(( deepvariant_path/'{mode}'/normal_samples/(normal_samples + ".vcf.gz")).unique(), mode=MODE)
+        output += expand(( deepvariant_path/'{mode}'/normal_samples/(normal_samples + ".g.vcf.gz")).unique(), mode=MODE)
     if tool == 'pepper':
         pepper_path = Path('analysis/snvs/pepper')
-        output = expand(( pepper_path/samples_df['flowcell_version']/'{mode}'/samples_df['sample_id']/(samples_df['sample_id'] + '.phased.vcf.gz')).unique(), mode=MODE) 
+        normal_samples_df = samples_df[samples_df['type']=='normal']
+        output = expand(( pepper_path/normal_samples_df['flowcell_version']/'{mode}'/normal_samples_df['sample_id']/(normal_samples_df['sample_id'] + '.phased.vcf.gz')).unique(), mode=MODE) 
     return output
 
 def get_sv_calling_output(tool):
@@ -74,8 +76,7 @@ def get_final_output():
 
     ## snv calling
     snv_output = []
-    for tool in ['clairS','deepsomatic','pepper','deepvariant']:
-        snv_output += get_snv_calling_output(tool)
+    snv_output = get_snv_calling_output(config['germline_snv_from']) + get_snv_calling_output(config['somatic_snv_from'])
     
     ## methylation
     mod_output = expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '.bed.gz').unique(), mode=MODE)
@@ -154,14 +155,16 @@ def get_clair3_model(wildcards):
     
     return clair3_model
 
-def get_phased_input(sample, flowcell, mode, type="bam"):
-    match config['hptag_bam_from']:
+def get_phased_vcf(sample, flowcell, mode):
+    donor_id = samples_df[samples_df['sample_id']==sample].donor_id.tolist()[0]
+    normal_sample_id = samples_df[(samples_df['donor_id']==donor_id) & (samples_df['type']=='normal')].sample_id.tolist()[0]
+    match config['germline_snv_from']:
         case 'clair3':
-            return f"analysis/snvs/clair3/{flowcell}/{mode}/{sample}.haplotagged.bam" if type == "bam" else f"analysis/snvs/clair3/{flowcell}/{mode}/{sample}/phased_merge_output.vcf.gz"
+            return f"analysis/snvs/clair3/{flowcell}/{mode}/{sample}/phased_merge_output.vcf.gz"
         case 'pepper':
-            return f"analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if type == "bam" else f"analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
+            return f"analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
         case 'deepvariant':
-            return f"analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if type == "bam" else f"analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf"
+            return f"analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
         case _:
             raise ValueError("haplotagged bam should only be generated from clair3, pepper, or deepvariant!")
             return None

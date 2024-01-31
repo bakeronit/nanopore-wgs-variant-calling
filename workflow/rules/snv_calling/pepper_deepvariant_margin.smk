@@ -13,7 +13,7 @@ rule call_germline_snv_pepper:
         bai="analysis/bam/{flowcell}/{mode}/{sample}.bam.bai"
     output:
         vcf = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz",
-        bam = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if config['hptag_bam_from'] == "pepper" else []
+        #bam = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if config['germline_snv_from'] == "pepper" else []
     log:
         "logs/pepper/{flowcell}.{mode}.{sample}.log"
     benchmark:
@@ -21,13 +21,14 @@ rule call_germline_snv_pepper:
     threads: 24
     resources:
         mem = 64,
-        walltime = 48
+        walltime = 100
     envmodules:
         "singularity/3.7.1"
     params:
         output_dir = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}",
         mode = lambda w: '--ont_r9_guppy5_sup' if w.flowcell == 'R9' else '--ont_r10_q20',
-        keep = "--skip_final_phased_bam" if config['hptag_bam_from'] != "pepper" else "" ## save some space, no need to keep the haplotagged bam file after phasing, if we are not using the bam later.
+        #keep = "--skip_final_phased_bam" if config['germline_snv_from'] != "pepper" else "" ## save some space, no need to keep the haplotagged bam file after phasing, if we are not using the bam later.
+        keep = "--skip_final_phased_bam"
     shell:
         """
         singularity exec {PEPPER_MARGIN_DV_sif} \
