@@ -10,8 +10,10 @@ reference:
     build: GRCh38
     file: /mnt/backedup/home/jiaZ/working/data/genome/reference.fasta
 
-germline_snv_from: 'clair3'
-somatic_snv_from: 'deepsomatic'
+phased_snv_from: 'pepper'
+germline_snv_calling: ['clair3','pepper','deepvariant']
+somatic_snv_calling: ['clairS','deepsomatic']
+
 
 ## config for tools and models path.
 ### models for basecalling
@@ -48,6 +50,7 @@ deepvariant:
 
 pepper: 
     sif: /mnt/backedup/home/jiaZ/working/imgs/pepper/pepper_deepvariant_r0.8.sif
+    params: /mnt/backedup/home/jiaZ/working/data/ont_models/margin_phase
 
 severus:
     vntr: /mnt/backedup/home/jiaZ/working/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed

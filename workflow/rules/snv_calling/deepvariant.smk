@@ -42,12 +42,12 @@ rule margin_phasing:
         genome=config['reference']['file'],
         vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.vcf.gz"
     output:
-        #bam="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam",
         vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
     params:
-        json=lambda w: 'allParams.haplotag.ont-r94g507.json' if w.flowcell == 'R9' else 'allParams.haplotag.ont-r104q20.json',
+        json=lambda w: '/opt/margin_dir/params/phase/allParams.haplotag.ont-r94g507.json' if w.flowcell == 'R9' else '/opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json',
         prefix="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}",
-        vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf"
+        vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf",
+        params_path = config['pepper']['params']
     log:
         "logs/deepvariant/{flowcell}.{mode}.{sample}.margin.log"
     benchmark:
@@ -61,10 +61,11 @@ rule margin_phasing:
         "htslib/1.16"
     shell:
         """
-        singularity run {PEPPER_MARGIN_DV_sif} \
+        singularity exec --bind {params.params_path}:/opt/margin_dir/params/phase2 {PEPPER_MARGIN_DV_sif} \
         margin phase \
         {input.bam} {input.genome} {input.vcf} \
-        {params.json} -t {threads} -o {params.prefix} --skipHaplotypeBam | tee -a {log}
+        {params.json} -t {threads} -o {params.prefix} --skipHaplotypeBAM | tee -a {log}
 
-        bgzip {params.vcf}    
+        bgzip {params.vcf}
+        tabix -p vcf {output.vcf}
         """

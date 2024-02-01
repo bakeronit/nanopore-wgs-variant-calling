@@ -40,5 +40,5 @@ rule call_somatic_sv_savana:
         --ref {input.genome} \
         --sample {wildcards.sample_t}.{wildcards.sample_n} \
         --threads {threads} \
-        --outdir {params.outdir}
+        --outdir {params.outdir} &> {log}
         """

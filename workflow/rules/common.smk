@@ -76,7 +76,10 @@ def get_final_output():
 
     ## snv calling
     snv_output = []
-    snv_output = get_snv_calling_output(config['germline_snv_from']) + get_snv_calling_output(config['somatic_snv_from'])
+    for tool in config['germline_snv_calling']:
+        snv_output += get_snv_calling_output(tool)
+    for tool in config['somatic_snv_calling']:
+        snv_output += get_snv_calling_output(tool)
     
     ## methylation
     mod_output = expand( ('analysis/mod/' + samples_df['flowcell_version'] + '/{mode}/' + samples_df['sample_id'] + '.bed.gz').unique(), mode=MODE)
@@ -158,13 +161,13 @@ def get_clair3_model(wildcards):
 def get_phased_vcf(sample, flowcell, mode):
     donor_id = samples_df[samples_df['sample_id']==sample].donor_id.tolist()[0]
     normal_sample_id = samples_df[(samples_df['donor_id']==donor_id) & (samples_df['type']=='normal')].sample_id.tolist()[0]
-    match config['germline_snv_from']:
+    match config['phased_snv_from']:
         case 'clair3':
-            return f"analysis/snvs/clair3/{flowcell}/{mode}/{sample}/phased_merge_output.vcf.gz"
+            return f"analysis/snvs/clair3/{flowcell}/{mode}/{normal_sample_id}/phased_merge_output.vcf.gz"
         case 'pepper':
-            return f"analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
+            return f"analysis/snvs/pepper/{flowcell}/{mode}/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
         case 'deepvariant':
-            return f"analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
+            return f"analysis/snvs/deepvariant/{flowcell}/{mode}/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
         case _:
             raise ValueError("haplotagged bam should only be generated from clair3, pepper, or deepvariant!")
             return None

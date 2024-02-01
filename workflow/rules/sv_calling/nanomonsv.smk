@@ -90,6 +90,8 @@ rule call_somatic_sv_nanomonsv_get:
         vcf = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.vcf",
         sbnd_txt = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.result.txt",
         sread = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.supporting_read.txt",
+    benchmark:
+        "benchmarks/nanomonsv/{flowcell}.{mode}.{sample_t}.{sample_n}.get.benchmark.txt"
     params:
         tumour_prefix = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}/{sample_t}",
         normal_prefix = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_n}/{sample_n}",
@@ -128,6 +130,8 @@ rule nanomonsv_parse:
         "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.rearrangement.sorted.bedpe.gz",
     params:
         prefix="analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}"
+    benchmark:
+        "benchmarks/nanomonsv/{flowcell}.{mode}.{sample}.parse.benchmark.txt"
     threads: 1
     resources:
         mem = 24,

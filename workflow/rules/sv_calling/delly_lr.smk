@@ -20,6 +20,8 @@ rule call_somatic_sv_delly:  # paired-samples analysis
         bcf = "analysis/svs/delly/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.pre.bcf",
         samples_tsv = "analysis/svs/delly/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.tsv",
         filtered_vcf = "analysis/svs/delly/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.vcf"
+    benchmark:
+        "benchmarks/delly/{flowcell}.{mode}.{sample_t}.{sample_n}.benchmark.txt"
     envmodules:
         "samtools/1.17",
         "bcftools/1.16"
