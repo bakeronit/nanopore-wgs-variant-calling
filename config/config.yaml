@@ -1,6 +1,7 @@
 ### samples table
 #samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/samples.csv
 samples: /mnt/backedup/home/jiaZ/working/dev/nanopore_paired_tumour_workflow/config/test.csv
+
 basecalling_mode: ['sup']
 
 step: 'all'  ## can be basecalling, alignment, snv, all.
@@ -10,9 +11,11 @@ reference:
     build: GRCh38
     file: /mnt/backedup/home/jiaZ/working/data/genome/reference.fasta
 
-phased_snv_from: 'pepper'
-germline_snv_calling: ['clair3','pepper','deepvariant']
-somatic_snv_calling: ['clairS','deepsomatic']
+snv_calling:
+    germline: ['clair3']
+    somatic: ['deepsomatic']
+
+phased_snv_from: 'clair3'
 
 
 ## config for tools and models path.
@@ -28,25 +31,11 @@ ont_model:
     r10:
         hac:
             canonical: /mnt/backedup/home/jiaZ/working/data/ont_models/dna_r10.4.1_e8.2_400bps_hac@v4.3.0
-            remora: /mnt/backedup/home/jiaZ/working/data/ont_models/dna_r10.4.1_e8.2_400bps_hac@v4.3.0_5mCG_5hmCG@v2
+            remora: /mnt/backedup/home/jiaZ/working/data/ont_models/dna_r10.4.1_e8.2_400bps_hac@v4.3.0_5mCG_5hmCG@v1
         sup:
             canonical: /mnt/backedup/home/jiaZ/working/data/ont_models/dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-            remora: /mnt/backedup/home/jiaZ/working/data/ont_models/dna_r10.4.1_e8.2_400bps_sup@v4.3.0_5mCG_5hmCG@v2
+            remora: /mnt/backedup/home/jiaZ/working/data/ont_models/dna_r10.4.1_e8.2_400bps_sup@v4.3.0_5mCG_5hmCG@v1
 
-clair3:
-    sif: /mnt/backedup/home/jiaZ/working/imgs/clair3/clair3_v1.0.5.sif
-    model_r9: /opt/models/r941_prom_sup_g5014    ## clair3 suggests to use sup for hac data
-    model_r10: /mnt/backedup/home/jiaZ/working/data/ont_models/clair3_models/r1041_e82_400bps_sup_v430
-
-clairS:
-    sif: /mnt/backedup/home/jiaZ/working/imgs/clairs/clairs_v0.1.7.sif
-    platform:
-        R9: ont_r9_guppy
-        R10: ont_r10_dorado_sup_5khz
-
-deepvariant: 
-    gpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_v1.6.0-gpu.sif
-    cpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_1.6.0.sif
 
 pepper: 
     sif: /mnt/backedup/home/jiaZ/working/imgs/pepper/pepper_deepvariant_r0.8.sif
@@ -74,5 +63,5 @@ filter:
 ## tool path: need to have them in a environment in the future.
 ### dorado path, since it updates so frequently, I will install in my own folders first.
 dorado_latest: /mnt/backedup/home/jiaZ/working/local/dorado/dorado-0.5.1-linux-x64/bin/dorado
-modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.2.4/modkit
+modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.3.1/modkit
 bamcov: /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov

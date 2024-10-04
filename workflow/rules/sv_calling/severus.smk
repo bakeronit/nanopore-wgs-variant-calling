@@ -8,7 +8,7 @@ rule call_somatic_sv_severus:
         hp_tagged_tumour_bam = "analysis/bam/{flowcell}/{mode}/{sample_t}.haplotagged.bam", 
         hp_tagged_normal_bam = "analysis/bam/{flowcell}/{mode}/{sample_n}.haplotagged.bam",
         hp_tagged_tumour_bai = "analysis/bam/{flowcell}/{mode}/{sample_t}.haplotagged.bam.bai", 
-        phased_normal_bai = "analysis/bam/{flowcell}/{mode}/{sample_n}.haplotagged.bam.bai",
+        hp_tagged_normal_bai = "analysis/bam/{flowcell}/{mode}/{sample_n}.haplotagged.bam.bai",
         phased_vcf = lambda wildcards: get_phased_vcf(wildcards.sample_t, wildcards.flowcell, wildcards.mode),
         vntr_bed = config['severus']['vntr']
     output:

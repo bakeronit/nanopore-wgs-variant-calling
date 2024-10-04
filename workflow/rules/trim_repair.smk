@@ -4,9 +4,9 @@ modkit = config['modkit']
 
 rule trim_reads:
     input:
-        "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.ubam"
+        "analysis/ubam/{sample}/{run}.ubam"
     output:
-        temp("analysis/ubam/{flowcell}/{mode}/{sample}/{run}.trimmed.sorted.ubam")
+        temp("analysis/ubam/{sample}/{run}.trimmed.sorted.ubam")
     threads: 12
     resources:
         mem = 20,
@@ -27,15 +27,15 @@ rule trim_reads:
         samtools sort -@{threads} -n > {output}
         """
 
-rule sorted_basecalling_ubam:
+rule sorted_original_ubam:
     input:
-        "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.ubam"
+        "analysis/ubam/{sample}/{run}.ubam"
     output:
-        temp("analysis/ubam/{flowcell}/{mode}/{sample}/{run}.sorted.ubam")
+        temp("analysis/ubam/{sample}/{run}.sorted.ubam")
     threads: 12
     resources:
         mem = 20,
-        walltime = 10
+        walltime = 12
     envmodules:
         "samtools/1.17"
     shell:
@@ -45,15 +45,19 @@ rule sorted_basecalling_ubam:
 
 rule repair_MMtag:
     input:
-        original = "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.sorted.ubam",
-        trimmed = "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.trimmed.sorted.ubam"
+        original = "analysis/ubam/{sample}/{run}.sorted.ubam",
+        trimmed = "analysis/ubam/{sample}/{run}.trimmed.sorted.ubam"
     output:
-        temp("analysis/ubam/{flowcell}/{mode}/{sample}/{run}.trimmed_repaired.ubam")
+        temp("analysis/ubam/{sample}/{run}.trimmed_repaired.ubam")
+    log:
+        "logs/modkit_repair/{sample}.{run}.log"
     resources:
         mem = 20,
-        walltime = 10
-    threads: 1
+        walltime = 24
+    threads: 10
+    retries: 3
     shell:
         """
-        {modkit} repair -d {input.original} -a {input.trimmed} -o {output}
+        {modkit} repair --donor-bam {input.original} --acceptor-bam {input.trimmed} \
+            --output-bam {output} --log-filepath {log} --threads {threads}
         """

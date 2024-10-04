@@ -1,4 +1,5 @@
-DP_somatic_sif = "/mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_head561058313.sif"
+#DP_somatic_sif = "/mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_head561058313.sif"
+DP_somatic_sif = "/mnt/backedup/home/jiaZ/working/imgs/deepsomatic/deepsomatic_1.6.0.sif"
 
 rule call_somatic_snv_deepsomatic:
     input:
@@ -21,7 +22,7 @@ rule call_somatic_snv_deepsomatic:
         walltime=200
     shell:
         """
-        singularity exec {DP_somatic_sif} /opt/deepvariant/bin/run_deepsomatic \
+        singularity exec {DP_somatic_sif} /opt/deepvariant/bin/deepsomatic/run_deepsomatic  \
         --model_type=ONT_R104 \
         --ref={input.genome} \
         --reads_normal={input.normal_bam} \
@@ -29,7 +30,6 @@ rule call_somatic_snv_deepsomatic:
         --output_vcf={output} \
         --sample_name_tumor="{wildcards.sample_t}" \
         --sample_name_normal="{wildcards.sample_n}" \
-        --use_keras_model \
         --num_shards={threads} \
         --logging_dir=logs/deepsomatic/{wildcards.flowcell}.{wildcards.mode}.{wildcards.sample_t}.{wildcards.sample_n} \
         --customized_model={params.model}

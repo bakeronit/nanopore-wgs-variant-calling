@@ -1,32 +1,31 @@
-# TODO: make NanoFlit optional in the future.
 rule align_minimap2:
     input:
-        ubam = "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.trimmed_repaired.ubam" if config['filter']['trim'] else \
-        "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.ubam",
+        ubam = "analysis/ubam/{sample}/{run}.trimmed_repaired.ubam" if config['filter']['trim'] \
+            else "analysis/ubam/{sample}/{run}.ubam",
         genome = config['reference']['file']
     output:
-        bam = temp("analysis/bam/{flowcell}/{mode}/{sample}/{run}.bam"),
-        bai = "analysis/bam/{flowcell}/{mode}/{sample}/{run}.bam.bai"
+        bam = temp("analysis/bam/{sample}/{run}.bam"),
+        bai = "analysis/bam/{sample}/{run}.bam.bai"
     envmodules:
         "samtools/1.17",
-        "minimap2/2.26"
+        "minimap2/2.27"
     threads: 24
     resources:
         mem = 36,
-        walltime = 2
+        walltime = 24
     params:
         qs = config['filter']['read_qs'],
         rg = "\"@RG\\tID:{sample}.{run}\\tPL:ONT\\tSM:{sample}\""
     benchmark:
-        "benchmarks/minimap2/{flowcell}.{sample}.{run}.{mode}.benchmark.txt"
+        "benchmarks/minimap2/{sample}.{run}.benchmark.txt"
     log:
-        "logs/minimap2/{flowcell}.{sample}.{run}.{mode}.log"
+        "logs/minimap2/{sample}.{run}.log"
     shell: 
         """
         samtools view -e '[qs] >= {params.qs}' {input.ubam} | \
         samtools fastq -@8 -T "*" | \
             minimap2 -R {params.rg} \
-            -y --MD -ax map-ont -t {threads} {input.genome} - | \
+            -y -Y --MD -ax lr:hq -t {threads} {input.genome} - | \
             samtools sort -@8 -O BAM --write-index -o {output.bam}##idx##{output.bai} - &>{log}
         """ 
 
@@ -34,14 +33,14 @@ rule merge_bam:
     input:
         get_bam_of_runs
     output:
-        bam = "analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai = "analysis/bam/{flowcell}/{mode}/{sample}.bam.bai"
+        bam = "analysis/bam/{sample}.bam",
+        bai = "analysis/bam/{sample}.bam.bai"
     threads: 10
     resources:
         mem = 20,
-        walltime = 1
+        walltime = 8
     run:
-        if len(input)>1:
+        if len(input) > 1:
             shell("module load samtools/1.17 && samtools merge -@{threads} --write-index {output.bam}##idx##{output.bai} {input}")
         else:
             shell("mv {input} {output.bam} && mv {input}.bai {output.bai}")

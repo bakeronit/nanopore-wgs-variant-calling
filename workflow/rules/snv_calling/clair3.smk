@@ -10,19 +10,19 @@ Clair3_sif = config['clair3']['sif']
 
 rule call_germline_snv_clair3:
     input:
-        bam = "analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai = "analysis/bam/{flowcell}/{mode}/{sample}.bam.bai",
+        bam = "analysis/bam/{sample}.bam",
+        bai = "analysis/bam/{sample}.bam.bai",
         genome = config['reference']['file'],
     output:
-        vcf = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}/merge_output.vcf.gz",
-        phased_vcf = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}/phased_merge_output.vcf.gz"
+        vcf = "analysis/snvs/clair3/{sample}/merge_output.vcf.gz",
+        phased_vcf = "analysis/snvs/clair3/{sample}/phased_merge_output.vcf.gz"
     params:
-        outdir = "analysis/snvs/clair3/{flowcell}/{mode}/{sample}",
-        model=get_clair3_model
+        outdir = "analysis/snvs/clair3/{sample}",
+        model=config['clair3']['model']
     log:
-        "logs/clair3/{flowcell}.{mode}.{sample}.log"
+        "logs/clair3/{sample}.log"
     benchmark:
-        "benchmarks/clair3/{flowcell}.{mode}.{sample}.benchmark.txt"
+        "benchmarks/clair3/{sample}.benchmark.txt"
     threads: 24
     envmodules:
         "singularity/3.7.1"
