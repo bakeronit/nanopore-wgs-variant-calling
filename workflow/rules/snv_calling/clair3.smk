@@ -24,11 +24,11 @@ rule call_germline_snv_clair3:
     benchmark:
         "benchmarks/clair3/{sample}.benchmark.txt"
     threads: 24
-    envmodules:
-        "singularity/3.7.1"
     resources:
         mem = 48,
         walltime = 48
+    envmodules:
+        "singularity/3.7.1"
     shell:
         """
         singularity exec {Clair3_sif} /opt/bin/run_clair3.sh \

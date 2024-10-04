@@ -5,26 +5,28 @@ delly = config['delly']['path']
 
 rule call_somatic_sv_delly:  # paired-samples analysis
     input:
-        tumour_bam="analysis/bam/{flowcell}/{mode}/{sample_t}.bam",
-        tumour_bai="analysis/bam/{flowcell}/{mode}/{sample_t}.bam.bai",
-        normal_bam="analysis/bam/{flowcell}/{mode}/{sample_n}.bam",
-        normal_bai="analysis/bam/{flowcell}/{mode}/{sample_n}.bam.bai",
+        tumour_bam="analysis/bam/{sample_t}.bam",
+        tumour_bai="analysis/bam/{sample_t}.bam.bai",
+        normal_bam="analysis/bam/{sample_n}.bam",
+        normal_bai="analysis/bam/{sample_n}.bam.bai",
         genome=config['reference']['file']
+    output:
+        bcf = "analysis/svs/delly/{sample_t}.{sample_n}/{sample_t}.{sample_n}.pre.bcf",
+        samples_tsv = "analysis/svs/delly/{sample_t}.{sample_n}/{sample_t}.{sample_n}.tsv",
+        filtered_vcf = "analysis/svs/delly/{sample_t}.{sample_n}/{sample_t}.{sample_n}.vcf"
     params:
         excl = f"-x {config['delly']['bed']}" if config['delly']['bed'] != None else ""
+    log:
+        "logs/svs/delly/{sample_t}.{sample_n}.log"
+    benchmark:
+        "benchmarks/delly/{sample_t}.{sample_n}.benchmark.txt"
     threads: 2
     resources:
         mem = 48,
         walltime = 48
-    output:
-        bcf = "analysis/svs/delly/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.pre.bcf",
-        samples_tsv = "analysis/svs/delly/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.tsv",
-        filtered_vcf = "analysis/svs/delly/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.vcf"
-    benchmark:
-        "benchmarks/delly/{flowcell}.{mode}.{sample_t}.{sample_n}.benchmark.txt"
     envmodules:
         "samtools/1.17",
-        "bcftools/1.16"
+        "bcftools/1.19"
     shell:
         """
         export OMP_NUM_THREADS={threads} # delly primarily parallises on the sample level.
@@ -32,7 +34,7 @@ rule call_somatic_sv_delly:  # paired-samples analysis
             -t ALL \
             -y ont \
             -o {output.bcf} {params.excl} \
-            -g {input.genome} {input.tumour_bam} {input.normal_bam}
+            -g {input.genome} {input.tumour_bam} {input.normal_bam} | tee -a {log}
         
         function get_sample_id() {{
             echo "$(samtools view -H ${{1}} | perl -lne 'print ${{1}} if /\\sSM:(\\S+)/' | head -n 1 )"

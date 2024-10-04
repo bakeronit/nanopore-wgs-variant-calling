@@ -10,17 +10,17 @@ misc = config['nanomonsv']['misc_scripts_path']
 rule nanomonsv_postprocess_sbnd:
     input:
         genome = config['reference']['file'],
-        result = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
-        sbnd_result = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.result.txt",
+        result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
+        sbnd_result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.result.txt",
         simple_repeat = config['nanomonsv']['simple_repeat']
     output:
         #directory("analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd_vis"),
-        annot = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.annot.proc.result.txt",
-        sbnd_annot = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.annot.proc.result.txt",
-        annot_pass = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.annot.proc.result.pass.txt",
-        sbnd_annot_pass = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.annot.proc.result.pass.txt"
+        annot = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.annot.proc.result.txt",
+        sbnd_annot = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.annot.proc.result.txt",
+        annot_pass = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.annot.proc.result.pass.txt",
+        sbnd_annot_pass = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.annot.proc.result.pass.txt"
     params:
-        prefix = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}"
+        prefix = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}"
     threads: 1
     resources:
         mem = 2,
@@ -49,12 +49,12 @@ rule nanomonsv_postprocess_sbnd:
 
 rule nanomonsv_filter_simple_repeat_svtype:
     input:
-        result = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
+        result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
         simple_repeat = config['nanomonsv']['simple_repeat']
     output:
-        filt = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.txt",
-        passed = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.txt",
-        svtype = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.svtype.txt"
+        filt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.txt",
+        passed = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.txt",
+        svtype = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.svtype.txt"
     threads: 1
     resources:
         mem = 2,
@@ -75,28 +75,28 @@ rule nanomonsv_filter_simple_repeat_svtype:
 
 rule call_somatic_sv_nanomonsv_get:
     input:
-        [f"analysis/svs/nanomonsv/{{flowcell}}/{{mode}}/{{sample_t}}/{{sample_t}}.{type}.sorted.bed.gz" for type in ['bp_info','deletion','insertion']],
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}/{sample_t}.rearrangement.sorted.bedpe.gz",
-        [f"analysis/svs/nanomonsv/{{flowcell}}/{{mode}}/{{sample_n}}/{{sample_n}}.{type}.sorted.bed.gz" for type in ['bp_info','deletion','insertion']],
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_n}/{sample_n}.rearrangement.sorted.bedpe.gz",
+        multiext("analysis/svs/nanomonsv/{sample_t}/{sample_t}", '.bp_info.sorted.bed.gz','.deletion.sorted.bed.gz','.insertion.sorted.bed.gz', '.rearrangement.sorted.bedpe.gz'),
+        multiext("analysis/svs/nanomonsv/{sample_n}/{sample_n}", '.bp_info.sorted.bed.gz','.deletion.sorted.bed.gz','.insertion.sorted.bed.gz', '.rearrangement.sorted.bedpe.gz'),
         genome = config['reference']['file'],
-        tumour_bam = "analysis/bam/{flowcell}/{mode}/{sample_t}.bam",
-        tumour_bai = "analysis/bam/{flowcell}/{mode}/{sample_t}.bam.bai",
-        normal_bam = "analysis/bam/{flowcell}/{mode}/{sample_n}.bam",
-        normal_bai = "analysis/bam/{flowcell}/{mode}/{sample_n}.bam",
+        tumour_bam = "analysis/bam/{sample_t}.bam",
+        tumour_bai = "analysis/bam/{sample_t}.bam.bai",
+        normal_bam = "analysis/bam/{sample_n}.bam",
+        normal_bai = "analysis/bam/{sample_n}.bam",
         control_panel_path = config['nanomonsv']['control_panel_path'],
     output:
-        txt = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
-        vcf = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.vcf",
-        sbnd_txt = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.result.txt",
-        sread = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.supporting_read.txt",
-    benchmark:
-        "benchmarks/nanomonsv/{flowcell}.{mode}.{sample_t}.{sample_n}.get.benchmark.txt"
+        txt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
+        vcf = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.vcf",
+        sbnd_txt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.result.txt",
+        sread = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.supporting_read.txt",
     params:
-        tumour_prefix = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}/{sample_t}",
-        normal_prefix = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_n}/{sample_n}",
+        tumour_prefix = "analysis/svs/nanomonsv/{sample_t}/{sample_t}",
+        normal_prefix = "analysis/svs/nanomonsv/{sample_n}/{sample_n}",
         panel_prefix="hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control",
-        final_outdir = "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}"
+        final_outdir = "analysis/svs/nanomonsv/{sample_t}.{sample_n}"
+    log:
+        "logs/svs/nanomonsv/{sample_t}.{sample_n}.get.log"
+    benchmark:
+        "benchmarks/nanomonsv/{sample_t}.{sample_n}.get.benchmark.txt"
     threads: 20
     resources:
         mem = 48,
@@ -108,30 +108,32 @@ rule call_somatic_sv_nanomonsv_get:
         nanomonsv get {params.tumour_prefix} {input.tumour_bam} {input.genome} \
         --control_prefix {params.normal_prefix} --control_bam {input.normal_bam} \
         --single_bnd --use_racon --min_indel_size 10 --qv20 \
-        --control_panel_prefix {input.control_panel_path}/{params.panel_prefix} --processes {threads}
+        --control_panel_prefix {input.control_panel_path}/{params.panel_prefix} --processes {threads} | tee -a {log}
 
         mkdir -p {params.final_outdir}
-        mv analysis/svs/nanomonsv/{wildcards.flowcell}/{wildcards.mode}/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.result.txt {output.txt}
-        mv analysis/svs/nanomonsv/{wildcards.flowcell}/{wildcards.mode}/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.result.vcf {output.vcf}
-        mv analysis/svs/nanomonsv/{wildcards.flowcell}/{wildcards.mode}/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.sbnd.result.txt {output.sbnd_txt}
-        mv analysis/svs/nanomonsv/{wildcards.flowcell}/{wildcards.mode}/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.supporting_read.txt {output.sread}
+        mv analysis/svs/nanomonsv/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.result.txt {output.txt}
+        mv analysis/svs/nanomonsv/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.result.vcf {output.vcf}
+        mv analysis/svs/nanomonsv/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.sbnd.result.txt {output.sbnd_txt}
+        mv analysis/svs/nanomonsv/{wildcards.sample_t}/{wildcards.sample_t}.nanomonsv.supporting_read.txt {output.sread}
         """
 
 rule nanomonsv_parse:
     input:
-        bam = "analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai="analysis/bam/{flowcell}/{mode}/{sample}.bam.bai",
+        bam = "analysis/bam/{sample}.bam",
+        bai="analysis/bam/{sample}.bam.bai",
         #genome = config['reference']['file']   # nnmsv supports cram from v0.7.0. for cram input, --reference_fasta is recommended.
     output:
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.bp_info.sorted.bed.gz",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.bp_info.sorted.bed.gz.tbi",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.deletion.sorted.bed.gz",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.insertion.sorted.bed.gz",
-        "analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}.rearrangement.sorted.bedpe.gz",
+        "analysis/svs/nanomonsv/{sample}/{sample}.bp_info.sorted.bed.gz",
+        "analysis/svs/nanomonsv/{sample}/{sample}.bp_info.sorted.bed.gz.tbi",
+        "analysis/svs/nanomonsv/{sample}/{sample}.deletion.sorted.bed.gz",
+        "analysis/svs/nanomonsv/{sample}/{sample}.insertion.sorted.bed.gz",
+        "analysis/svs/nanomonsv/{sample}/{sample}.rearrangement.sorted.bedpe.gz",
     params:
-        prefix="analysis/svs/nanomonsv/{flowcell}/{mode}/{sample}/{sample}"
+        prefix="analysis/svs/nanomonsv/{sample}/{sample}"
+    log:
+        "logs/svs/nanomonsv/{sample}.parse.log"
     benchmark:
-        "benchmarks/nanomonsv/{flowcell}.{mode}.{sample}.parse.benchmark.txt"
+        "benchmarks/nanomonsv/{sample}.parse.benchmark.txt"
     threads: 1
     resources:
         mem = 24,
@@ -140,5 +142,5 @@ rule nanomonsv_parse:
         "nanomonsv/0.7.1"
     shell:
         """
-        nanomonsv parse {input.bam} {params.prefix}
+        nanomonsv parse {input.bam} {params.prefix} | tee -a {log}
         """
