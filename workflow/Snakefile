@@ -24,9 +24,10 @@ include: "rules/snv_calling/deepvariant.smk"
 include: "rules/snv_calling/deepsomatic.smk"
 include: "rules/snv_calling/clairS.smk"
 include: "rules/sv_calling/nanomonsv.smk"
+include: "rules/sv_calling/savana.smk"
 
 
 ##### target rules #####
 rule all:
     input:
-        get_final_output(),
+        get_final_output(step='all'),

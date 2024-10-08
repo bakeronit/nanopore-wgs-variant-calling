@@ -12,8 +12,9 @@ clair3:
 
 clairS:
   sif: /mnt/backedup/home/jiaZ/working/imgs/clairs/clairs_v0.3.1.sif
-  platform:
-    R10: ont_r10_dorado_sup_5khz
+  platform: ont_r10_dorado_sup_5khz
+  indel_calling: True
+  subclone: True
 
 bamcov: /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov
 modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.3.1/modkit

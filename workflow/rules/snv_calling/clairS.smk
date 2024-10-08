@@ -3,21 +3,22 @@ ClairS_sif = config['clairS']['sif']
 rule call_somatic_snv_clairS:
     input:
         genome = config['reference']['file'],
-        tumor_bam = "analysis/bam/{flowcell}/{mode}/{sample_t}.bam",
-        tumor_bai = "analysis/bam/{flowcell}/{mode}/{sample_t}.bam.bai",
-        normal_bam = "analysis/bam/{flowcell}/{mode}/{sample_n}.bam",
-        normal_bai = "analysis/bam/{flowcell}/{mode}/{sample_n}.bam.bai"
+        tumor_bam = "analysis/bam/{sample_t}.bam",
+        tumor_bai = "analysis/bam/{sample_t}.bam.bai",
+        normal_bam = "analysis/bam/{sample_n}.bam",
+        normal_bai = "analysis/bam/{sample_n}.bam.bai"
     output:
-        "analysis/snvs/clairS/{flowcell}/{mode}/{sample_t}.{sample_n}/output.vcf.gz"
+        "analysis/snvs/clairS/{sample_t}.{sample_n}/output.vcf.gz"
     params:
-        platform = lambda w: config['clairS']['platform'][w.flowcell],
-        outdir = "analysis/snvs/clairS/{flowcell}/{mode}/{sample_t}.{sample_n}",
-        clair3_model = lambda w: config['clair3']['model_r10'] if w.flowcell == 'R10' else config['clair3']['model_r9'],
-        indel_option = lambda w: "--enable_indel_calling" if w.flowcell == 'R10' else ""   # indel calling currently only available for R10 data.
+        platform = config['clairS']['platform'],
+        outdir = "analysis/snvs/clairS/{sample_t}.{sample_n}",
+        clair3_model = config['clair3']['model'],
+        indel_option = "--enable_indel_calling" if config['clairS']['indel_calling'] else "",
+        verdict_option = "--enable_verdict" if config['clairS']['subclone'] else ""
     log:
-        "logs/clairS/{flowcell}.{mode}.{sample_t}.{sample_n}.log"
+        "logs/clairS/{sample_t}.{sample_n}.log"
     benchmark:
-        "benchmarks/clairS/{flowcell}.{mode}.{sample_t}.{sample_n}.benchmark.txt"
+        "benchmarks/clairS/{sample_t}.{sample_n}.benchmark.txt"
     threads: 24
     envmodules:
         "singularity/3.7.1"
@@ -31,7 +32,7 @@ rule call_somatic_snv_clairS:
             --normal_bam_fn {input.normal_bam} \
             --ref_fn {input.genome} \
             --clair3_model_path {params.clair3_model} \
-            --include_all_ctgs {params.indel_option} \
+            --include_all_ctgs {params.indel_option} {params.verdict_option} \
             --sample_name {wildcards.sample_t} \
             --threads {threads} \
             --platform {params.platform} \

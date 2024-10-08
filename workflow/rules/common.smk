@@ -42,41 +42,54 @@ class OutputCollector:
             pairs += [{'donor': donor_id, 'tumour': t, 'normal': n} for t in tumour_sample for n in normal_sample]
         return pairs
 
-    def get_clair3_output(self):
-        return collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=self.germline_df['sample_id'].unique())
-
-    def get_deepvariant_output(self):
-        return collect("analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz", sample=self.germline_df['sample_id'].unique())
-
-    def get_deepsomatic_output(self):
-        return [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
-
-    def get_clairs_output(self):
-        return [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
-
     def get_snv_indel_calling_output(self):
         results = []
         for tool in self.config['snv_calling']['germline'] + self.config['snv_calling']['somatic']:
             if tool.lower() == 'deepvariant':
-                results += self.get_deepvariant_output()
+                results += collect("analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz", sample=self.germline_df['sample_id'].unique())
             elif tool.lower() == 'clair3':
-                results += self.get_clair3_output()
+                results += collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=self.germline_df['sample_id'].unique())
             elif tool.lower() == 'deepsomatic':
-                results += self.get_deepsomatic_output()
+                results += [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
             elif tool.lower() == 'clairs':
-                results += self.get_clairs_output()
+                results += [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
             else:
                 sys.exit(f"Error: snv_caller {tool} is not supported.")
         return results
     
+    def get_savana_output(self, type='sv'):
+        if type == 'sv':
+            return [f"analysis/svs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.somatic.vcf" for pair in self.pairs]
+        elif type in ['cnv', 'cna']:
+            return [f"analysis/cnvs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}_segmented_absolute_copy_number.tsv" for pair in self.pairs]
+        else:
+            raise ValueError(f"Type {type} is not supported.")
+    
     def get_nanomonsv_output(self):
         return [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in self.pairs]
     
+    def get_severus_output(self):
+        pass
+    
 
 
-def get_final_output():
+def get_final_output(step='all'):
     output_collector = OutputCollector(samples_df, config)
     aligned_bam = output_collector.get_alignment_output()
     snv = output_collector.get_snv_indel_calling_output()
-    sv = output_collector.get_nanomonsv_output()
-    return aligned_bam + snv + sv
+    sv = output_collector.get_nanomonsv_output() + output_collector.get_savana_output(type="sv")
+    cnv = output_collector.get_savana_output(type="cnv")
+    final_output = []
+    match step:
+        case "all":
+            final_output = snv + sv 
+        case "align":
+            final_output = aligned_bam
+        case "snv":
+            final_output = snv
+        case "sv":
+            final_output = sv
+        case _:
+            raise ValueError(f"Step {step} is not supported.")
+    
+    return final_output

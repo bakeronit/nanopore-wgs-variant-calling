@@ -13,10 +13,12 @@ reference:
 
 snv_calling:
     germline: ['clair3']
-    somatic: ['deepsomatic']
+    somatic: ['deepsomatic','clairS']
 
 phased_snv_from: 'clair3'
 
+blacklist: /mnt/backedup/home/jiaZ/working/data/hg38-blacklist.v2.bed.gz
+pon: /mnt/backedup/home/jiaZ/working/data/pon/PoN_1000G_hg38.tsv.gz
 
 ## config for tools and models path.
 ### models for basecalling
@@ -59,9 +61,3 @@ filter:
     headcrop: 40
     tailcrop: 20
     minlen: 100
-
-## tool path: need to have them in a environment in the future.
-### dorado path, since it updates so frequently, I will install in my own folders first.
-dorado_latest: /mnt/backedup/home/jiaZ/working/local/dorado/dorado-0.5.1-linux-x64/bin/dorado
-modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.3.1/modkit
-bamcov: /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov
