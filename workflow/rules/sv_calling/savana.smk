@@ -24,7 +24,7 @@ rule call_somatic_sv_savana_run:
         "logs/savana/{sample_t}.{sample_n}.run.log"
     benchmark:
         "benchmarks/savana/{sample_t}.{sample_n}.run.benchmark.txt"
-    threads: 30
+    threads: 24 # to run three jobs a time in bigmem node
     resources:
         mem = 600,
         walltime = 24
@@ -84,7 +84,8 @@ rule call_somatic_sv_savana_classify:
 
 rule call_somatic_sv_savana_cna:
     input:
-        phased_vcf = "analysis/snvs/clair3/{sample_n}/phased_merge_output.vcf.gz",
+        phased_vcf = get_phased_vcf,
+        breakpoints = "analysis/svs/savana/{sample_t}.{sample_n}/{sample_t}.{sample_n}.sv_breakpoints.vcf",
         tumour_bam="analysis/bam/{sample_t}.bam",
         tumour_bai="analysis/bam/{sample_t}.bam.bai",
         normal_bam="analysis/bam/{sample_n}.bam",
@@ -110,7 +111,7 @@ rule call_somatic_sv_savana_cna:
         "logs/savana/{sample_t}.{sample_n}.cna.log"
     benchmark:
         "benchmarks/savana/{sample_t}.{sample_n}.cna.benchmark.txt"
-    threads: 30
+    threads: 24
     resources:
         mem = 400,
         walltime = 48
@@ -127,7 +128,7 @@ rule call_somatic_sv_savana_cna:
         --ref {input.genome} \
         --sample {wildcards.sample_t}.{wildcards.sample_n} \
         --phased_vcf {input.phased_vcf} \
-        --breakpoints {input.phased_vcf} \
+        --breakpoints {input.breakpoints} \
         --blacklist {input.blacklist} \
         --threads {threads} \
         --outdir {params.outdir} &> {log}

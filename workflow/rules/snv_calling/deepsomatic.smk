@@ -10,16 +10,14 @@ rule call_somatic_snv_deepsomatic:
     output:
         "analysis/snvs/deepsomatic/{sample_t}.{sample_n}/output.vcf.gz"
     params:
-        model="/mnt/backedup/home/jiaZ/working/data/ont_models/dpsomatic_model/weights-143-0.987994.ckpt"
-    log:
-        "logs/deepsomatic/{sample_t}.{sample_n}.log"
+        logdir = "logs/deepsomatic/{sample_t}.{sample_n}"
     benchmark:
         "benchmarks/deepsomatic/{sample_t}.{sample_n}.benchmark.txt"
     threads: 24
     envmodules:
         "singularity/3.7.1"
     resources:
-        mem=30,
+        mem=64,  # using 30gb will cause Cgroup out of memory error
         walltime=200
     shell:
         """
@@ -32,5 +30,20 @@ rule call_somatic_snv_deepsomatic:
         --sample_name_tumor="{wildcards.sample_t}" \
         --sample_name_normal="{wildcards.sample_n}" \
         --num_shards={threads} \
-        --logging_dir={log} 
+        --logging_dir={params.logdir}
+        """
+
+rule extract_somatic_snv_deepsomatic:
+    input:
+        vcf = "analysis/snvs/deepsomatic/{sample_t}.{sample_n}/output.vcf.gz"
+    output:
+        "analysis/snvs/deepsomatic/{sample_t}.{sample_n}/output.somatic.vcf.gz"
+    threads: 1
+    envmodules:
+        "bcftools/1.19",
+        "htslib/1.19.1"
+    shell:
+        """
+        bcftools view -i 'GT="1/1"' -f PASS {input.vcf} | bgzip -c > {output}
+        tabix -p vcf {output}
         """

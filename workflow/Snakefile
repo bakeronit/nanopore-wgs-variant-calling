@@ -21,10 +21,13 @@ include: "rules/minimap2_align.smk"
 include: "rules/trim_repair.smk"
 include: "rules/snv_calling/clair3.smk"
 include: "rules/snv_calling/deepvariant.smk"
+include: "rules/snv_calling/pepper_deepvariant_margin.smk"
+include: "rules/snv_calling/haplotagging.smk"
 include: "rules/snv_calling/deepsomatic.smk"
 include: "rules/snv_calling/clairS.smk"
 include: "rules/sv_calling/nanomonsv.smk"
 include: "rules/sv_calling/savana.smk"
+include: "rules/sv_calling/severus.smk"
 
 
 ##### target rules #####

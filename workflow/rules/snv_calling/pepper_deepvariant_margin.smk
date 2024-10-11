@@ -4,20 +4,22 @@
 ## set --skip_final_phased_bam will remove the bam files
 ##### 
 
+## propably deprecated this, since pepper margin deepvariant haven't been updated for a while.
+
 PEPPER_MARGIN_DV_sif = config['pepper']['sif']
 
 rule call_germline_snv_pepper:
     input:
         genome=config['reference']['file'],
-        bam="analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai="analysis/bam/{flowcell}/{mode}/{sample}.bam.bai"
+        bam="analysis/bam/{sample}.bam",
+        bai="analysis/bam/{sample}.bam.bai"
     output:
-        vcf = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz",
+        vcf = "analysis/snvs/pepper/{sample}/{sample}.phased.vcf.gz",
         #bam = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}/{sample}.haplotagged.bam" if config['phased_snv_from'] == "pepper" else []
     log:
-        "logs/pepper/{flowcell}.{mode}.{sample}.log"
+        "logs/pepper/{sample}.log"
     benchmark:
-        "benchmarks/pepper/{flowcell}.{mode}.{sample}.benchmark.txt"
+        "benchmarks/pepper/{sample}.benchmark.txt"
     threads: 24
     resources:
         mem = 64,
@@ -25,8 +27,8 @@ rule call_germline_snv_pepper:
     envmodules:
         "singularity/3.7.1"
     params:
-        output_dir = "analysis/snvs/pepper/{flowcell}/{mode}/{sample}",
-        mode = lambda w: '--ont_r9_guppy5_sup' if w.flowcell == 'R9' else '--ont_r10_q20',
+        output_dir = "analysis/snvs/pepper/{sample}",
+        mode = '--ont_r10_q20', 
         #keep = "--skip_final_phased_bam" if config['phased_snv_from'] != "pepper" else "" ## save some space, no need to keep the haplotagged bam file after phasing, if we are not using the bam later.
         keep = "--skip_final_phased_bam"
     shell:

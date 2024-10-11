@@ -14,7 +14,7 @@ rule call_germline_snv_deepvariant:
         "logs/deepvariant/{sample}.log"
     benchmark:
         "benchmarks/deepvariant/{sample}.benchmark.txt"
-    threads: 12 ## use 12 so a 4-GPUs nodes(with 52 CPUs) can run 4 jobs a time, I don't like 13 so.
+    threads: 30 ## use 12 so a 4-GPUs nodes(with 52 CPUs) can run 4 jobs a time.
     resources:
         mem = 64,
         walltime = 48
@@ -74,21 +74,21 @@ rule call_germline_snv_deepvariant_s1_make_examples:
 
 rule margin_phasing:
     input:
-        bam="analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai="analysis/bam/{flowcell}/{mode}/{sample}.bam.bai",
+        bam="analysis/bam/{sample}.bam",
+        bai="analysis/bam/{sample}.bam.bai",
         genome=config['reference']['file'],
-        vcf="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.vcf.gz"
+        vcf="analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz"
     output:
-        vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf.gz"
+        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf.gz"
     params:
         json=lambda w: '/opt/margin_dir/params/phase/allParams.haplotag.ont-r94g507.json' if w.flowcell == 'R9' else '/opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json',
-        prefix="analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}",
-        vcf = "analysis/snvs/deepvariant/{flowcell}/{mode}/{sample}/{sample}.phased.vcf",
+        prefix="analysis/snvs/deepvariant/{sample}/{sample}",
+        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf",
         params_path = config['pepper']['params']
     log:
-        "logs/deepvariant/{flowcell}.{mode}.{sample}.margin.log"
+        "logs/deepvariant/{sample}.margin_phasing.log"
     benchmark:
-        "benchmarks/deepvariant/{flowcell}.{mode}.{sample}.margin.benchmark.txt"
+        "benchmarks/deepvariant/{sample}.margin_phasing.benchmark.txt"
     threads: 24
     resources:
         mem = 48,

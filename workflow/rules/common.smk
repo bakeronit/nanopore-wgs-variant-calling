@@ -2,23 +2,37 @@ import pandas as pd
 from pathlib import Path
 import sys
 
-##TODO: pick the one from germline snv callers and somatic snv callers (some takes a long time, no need to run every tool), considering merging SVs results.
-
 samples_df = pd.read_csv(config['samples'])
 samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could be numbers only.
-germline_samples_df = samples_df[samples_df['type']=='normal']
 
 wildcard_constraints:
     sample="|".join(samples_df["sample_id"].unique()),
     run="|".join(samples_df["flowcell_id"].unique()),
+    sample_t="|".join(samples_df[samples_df['type']=='tumour']['sample_id'].unique()),
+    sample_n="|".join(samples_df[samples_df['type']=='normal']['sample_id'].unique())
 
-
-## get all bam files of a sample, could be data from multiple flowcells/runs.
+## get all bam files of a sample
 def get_bam_of_runs(wildcards):
     sample = wildcards.sample
     align_results_path = Path(f'analysis/bam/{sample}')
     flowcell_ids = set(samples_df[ (samples_df['sample_id'] == sample) ].flowcell_id)
     return [align_results_path / f'{run}.bam' for run in flowcell_ids]
+
+def get_phased_vcf(wildcards):
+    sample = wildcards.sample if hasattr(wildcards, 'sample') else wildcards.sample_t
+    donor_id = samples_df[samples_df['sample_id']==sample].donor_id.tolist()[0]
+    normal_sample_id = samples_df[(samples_df['donor_id']==donor_id) & (samples_df['type']=='normal')].sample_id.tolist()[0]
+    if config['phased_snv_from'] not in config['snv_calling']['germline']:
+        print("Warning: phased vcf is not generated from the germline snv caller you used for this workflow.")
+    match config['phased_snv_from'].lower():
+        case 'clair3':
+            return f"analysis/snvs/clair3/{normal_sample_id}/phased_merge_output.vcf.gz"
+        case 'pepper':
+            return f"analysis/snvs/pepper/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
+        case 'deepvariant':
+            return f"analysis/snvs/deepvariant/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
+        case _:
+            raise ValueError("haplotagged bam should only be generated from clair3, pepper, or deepvariant!")
 
 
 class OutputCollector:
@@ -50,7 +64,7 @@ class OutputCollector:
             elif tool.lower() == 'clair3':
                 results += collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=self.germline_df['sample_id'].unique())
             elif tool.lower() == 'deepsomatic':
-                results += [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
+                results += [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.somatic.vcf.gz" for pair in self.pairs]
             elif tool.lower() == 'clairs':
                 results += [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
             else:
@@ -64,31 +78,30 @@ class OutputCollector:
             return [f"analysis/cnvs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}_segmented_absolute_copy_number.tsv" for pair in self.pairs]
         else:
             raise ValueError(f"Type {type} is not supported.")
-    
-    def get_nanomonsv_output(self):
-        return [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in self.pairs]
-    
-    def get_severus_output(self):
-        pass
-    
 
+    def get_sv_calling_output(self):
+        nanomonsv = [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in self.pairs]
+        savana = self.get_savana_output(type='sv')
+        severus = [f"analysis/svs/severus/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic.vcf" for pair in self.pairs]
+
+        return nanomonsv + savana + severus
 
 def get_final_output(step='all'):
     output_collector = OutputCollector(samples_df, config)
     aligned_bam = output_collector.get_alignment_output()
     snv = output_collector.get_snv_indel_calling_output()
-    sv = output_collector.get_nanomonsv_output() + output_collector.get_savana_output(type="sv")
+    sv = output_collector.get_sv_calling_output()
     cnv = output_collector.get_savana_output(type="cnv")
     final_output = []
     match step:
-        case "all":
-            final_output = snv + sv 
         case "align":
             final_output = aligned_bam
         case "snv":
             final_output = snv
         case "sv":
             final_output = sv
+        case "all":
+            final_output = snv + sv #+ cnv JZ: can't test cnv due to small dataset.
         case _:
             raise ValueError(f"Step {step} is not supported.")
     
