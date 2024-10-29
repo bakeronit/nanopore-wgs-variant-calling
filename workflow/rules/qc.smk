@@ -1,12 +1,12 @@
-script = "../scripts"
+#script = "../scripts"
 bamcov = config['bamcov']
 
 rule bc_summary:
     input:
-        "analysis/ubam/{flowcell}/{mode}/{sample}/{run}.ubam"
+        "analysis/ubam/{sample}/{run}.ubam"
     output:
-        summary = "analysis/qc/basecalling/{flowcell}/{mode}/{sample}/{run}.summary.txt",
-        dy = "analysis/qc/basecalling/{flowcell}/{mode}/{sample}/{run}.data_yield.txt"
+        summary = "analysis/qc/basecalling/{sample}/{run}.summary.txt",
+        dy = "analysis/qc/basecalling/{sample}/{run}.data_yield.txt"
     threads: 1
     resources:
         mem = 10,
@@ -17,14 +17,14 @@ rule bc_summary:
         {script}/data_yield.awk {output.summary} > {output.dy}
         """
 
-rule bam_stats:
+rule qc_bam_stats:
     input:
-        "analysis/bam/{flowcell}/{mode}/{sample}.bam"
+        "analysis/bam/{sample}.bam"
     output:
-        "analysis/qc/bam/{flowcell}/{mode}/{sample}.mosdepth.global.dist.txt",
-        "analysis/qc/bam/{flowcell}/{mode}/{sample}.mosdepth.summary.txt",
+        "analysis/qc/bam/{sample}.mosdepth.global.dist.txt",
+        "analysis/qc/bam/{sample}.mosdepth.summary.txt",
     params:
-        prefix = "analysis/qc/bam/{flowcell}/{mode}/{sample}"
+        prefix = "analysis/qc/bam/{sample}"
     threads: 4
     resources:
         mem = 10,
@@ -36,11 +36,11 @@ rule bam_stats:
         mosdepth -n -t {threads} {params.prefix} {input}
         """
 
-rule bam_cov:
+rule qc_bam_cov:
     input:
-        "analysis/bam/{flowcell}/{mode}/{sample}.bam"
+        "analysis/bam/{sample}.bam"
     output:
-        "analysis/qc/bam/{flowcell}/{mode}/{sample}.bamcov.txt"
+        "analysis/qc/bam/{sample}.bamcov.txt"
     threads: 1
     resources:
         mem = 10,

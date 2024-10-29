@@ -38,5 +38,10 @@ rule call_somatic_sv_severus:
             --threads {threads} \
             --vntr-bed {input.vntr_bed} \
             --min-sv-size {params.min_svlen} \
+            --single-bp \
+            --between-junction-ins \
+            --write-collected-dup \
+            --output-read-ids \
+            --output-LOH \
             --phasing-vcf {input.phased_vcf} &>{log}
         """

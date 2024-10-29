@@ -85,6 +85,11 @@ class OutputCollector:
         severus = [f"analysis/svs/severus/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic.vcf" for pair in self.pairs]
 
         return nanomonsv + savana + severus
+    
+    def get_qc_output(self):
+        return collect("analysis/qc/bam/{sample}.mosdepth.global.dist.txt", sample=self.df['sample_id'].unique()) + \
+            collect("analysis/qc/bam/{sample}.mosdepth.summary.txt", sample=self.df['sample_id'].unique()) + \
+            collect("analysis/qc/bam/{sample}.bamcov.txt", sample=self.df['sample_id'].unique())  
 
 def get_final_output(step='all'):
     output_collector = OutputCollector(samples_df, config)
@@ -92,17 +97,18 @@ def get_final_output(step='all'):
     snv = output_collector.get_snv_indel_calling_output()
     sv = output_collector.get_sv_calling_output()
     cnv = output_collector.get_savana_output(type="cnv")
+    qc = output_collector.get_qc_output()
     final_output = []
     match step:
         case "align":
-            final_output = aligned_bam
+            final_output = aligned_bam + qc
         case "snv":
             final_output = snv
         case "sv":
             final_output = sv
         case "all":
-            final_output = snv + sv #+ cnv JZ: can't test cnv due to small dataset.
+            final_output = snv + sv + qc #+ cnv JZ: can't test cnv due to small dataset.
         case _:
             raise ValueError(f"Step {step} is not supported.")
-    
+
     return final_output

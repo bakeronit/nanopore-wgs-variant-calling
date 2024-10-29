@@ -45,6 +45,7 @@ rule call_somatic_sv_savana_run:
         --ref {input.genome} \
         --sample {wildcards.sample_t}.{wildcards.sample_n} \
         --length {params.min_svlen} \
+        --single_bnd \
         --threads {threads} \
         --outdir {params.outdir} &> {log}
         """
@@ -82,7 +83,7 @@ rule call_somatic_sv_savana_classify:
         --threads {threads} &> {log}
         """
 
-rule call_somatic_sv_savana_cna:
+rule call_somatic_cnv_savana_cna:
     input:
         phased_vcf = get_phased_vcf,
         breakpoints = "analysis/svs/savana/{sample_t}.{sample_n}/{sample_t}.{sample_n}.sv_breakpoints.vcf",
