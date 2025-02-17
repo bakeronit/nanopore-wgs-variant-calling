@@ -11,7 +11,7 @@ rule align_minimap2:
         "minimap2/2.27"
     threads: 24
     resources:
-        mem = 36,
+        mem = 48,
         walltime = 24
     params:
         qs = config['filter']['read_qs'],

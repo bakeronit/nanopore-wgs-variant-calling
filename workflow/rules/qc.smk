@@ -43,7 +43,7 @@ rule qc_bam_cov:
         "analysis/qc/bam/{sample}.bamcov.txt"
     threads: 1
     resources:
-        mem = 10,
+        mem = 32,
         walltime = 12
     shell:
         """
