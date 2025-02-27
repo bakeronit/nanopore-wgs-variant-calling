@@ -7,10 +7,10 @@ rule trim_reads:
         "analysis/ubam/{sample}/{run}.ubam"
     output:
         temp("analysis/ubam/{sample}/{run}.trimmed.sorted.ubam")
-    threads: 12
+    threads: 10 ## how many is needed exactly this need in a pipe.
     resources:
-        mem = 20,
-        walltime = 24
+        mem = 24,
+        walltime = 12
     envmodules:
         "samtools/1.17"
     params:
@@ -20,7 +20,7 @@ rule trim_reads:
         trim_len = config['filter']['headcrop'] + config['filter']['tailcrop']
     shell:
         """
-        samtools fastq -T"*" {input} | \
+        samtools fastq -@{threads} -T"*" {input} | \
         chopper --headcrop {params.headcrop} --tailcrop {params.tailcrop} --minlength {params.minlen} --threads {threads} | \
         awk '/^@.*MN:i:[0-9]+/ {{ match($0, /MN:i:([0-9]+)/, num);sub(/MN:i:[0-9]+/, "MN:i:" num[1]-{params.trim_len}) }}  1' |\
         samtools import -T"*" - | \
@@ -34,8 +34,8 @@ rule sorted_original_ubam:
         temp("analysis/ubam/{sample}/{run}.sorted.ubam")
     threads: 12
     resources:
-        mem = 20,
-        walltime = 12
+        mem = 24,
+        walltime = 6
     envmodules:
         "samtools/1.17"
     shell:
@@ -53,8 +53,8 @@ rule repair_MMtag:
         "logs/modkit_repair/{sample}.{run}.log"
     resources:
         mem = 20,
-        walltime = 24
-    threads: 10
+        walltime = 12
+    threads: 6 ## I asked 10 but it only used 3, so I set it to 6 to increase the usage %.
     retries: 3
     shell:
         """
