@@ -6,9 +6,6 @@ rule align_minimap2:
     output:
         bam = temp("analysis/bam/{sample}/{run}.bam"),
         bai = "analysis/bam/{sample}/{run}.bam.bai"
-    envmodules:
-        "samtools/1.17",
-        "minimap2/2.27"
     threads: 24
     resources:
         mem = 48,
