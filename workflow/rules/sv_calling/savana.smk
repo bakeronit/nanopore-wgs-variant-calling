@@ -92,7 +92,7 @@ rule call_somatic_cnv_savana_cna:
         normal_bam="analysis/bam/{sample_n}.bam",
         normal_bai="analysis/bam/{sample_n}.bam.bai",
         genome=config['reference']['file'],
-        blacklist=config['blacklist'],
+        blacklist=config['annotation']['blacklist'],
     output:
         "analysis/cnvs/savana/{sample_t}.{sample_n}/10kbp_bin_ref_all_{sample_t}.{sample_n}withVCF.bed",
         multiext("analysis/cnvs/savana/{sample_t}.{sample_n}/{sample_t}.{sample_n}", \

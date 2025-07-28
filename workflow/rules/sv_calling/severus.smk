@@ -10,7 +10,7 @@ rule call_somatic_sv_severus:
         hp_tagged_tumour_bai = "analysis/bam/{sample_t}.haplotagged.bam.bai", 
         hp_tagged_normal_bai = "analysis/bam/{sample_n}.haplotagged.bam.bai",
         phased_vcf = get_phased_vcf,
-        vntr_bed = config['severus']['vntr']
+        vntr_bed = config['annotation']['vntr']
     output:
         "analysis/svs/severus/{sample_t}.{sample_n}/somatic_SVs/severus_somatic.vcf"
     log:
@@ -28,9 +28,9 @@ rule call_somatic_sv_severus:
         "conda-envs/base"
     shell:
         """
-        set +eu
-        conda  activate ~/working/local/micromanba_envs/severus1.2
-        set -eu
+        #set +eu
+        #conda  activate ~/working/local/micromanba_envs/severus1.2
+        #set -eu
 
         severus --target-bam {input.hp_tagged_tumour_bam} \
             --control-bam {input.hp_tagged_normal_bam} \
@@ -40,7 +40,7 @@ rule call_somatic_sv_severus:
             --min-sv-size {params.min_svlen} \
             --single-bp \
             --between-junction-ins \
-            --write-collected-dup \
+            --write-collapsed-dup \
             --output-read-ids \
             --output-LOH \
             --phasing-vcf {input.phased_vcf} &>{log}

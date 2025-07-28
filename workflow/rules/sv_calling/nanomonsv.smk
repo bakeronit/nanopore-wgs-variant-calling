@@ -12,7 +12,7 @@ rule nanomonsv_postprocess_sbnd:
         genome = config['reference']['file'],
         result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
         sbnd_result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd.result.txt",
-        simple_repeat = config['nanomonsv']['simple_repeat']
+        simple_repeat = config['annotation']['simple_repeat']
     output:
         #directory("analysis/svs/nanomonsv/{flowcell}/{mode}/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.sbnd_vis"),
         annot = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.annot.proc.result.txt",
@@ -25,9 +25,6 @@ rule nanomonsv_postprocess_sbnd:
     resources:
         mem = 2,
         walltime = 1
-    envmodules:
-        "nanomonsv/0.7.1",    
-        "R/4.3.1"  # needs tidyverse and ggrepel
     shell:
         """
         if [ "$(wc -l < "{input.sbnd_result}")" -gt 1 ]; then
@@ -50,7 +47,7 @@ rule nanomonsv_postprocess_sbnd:
 rule nanomonsv_filter_simple_repeat_svtype:
     input:
         result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
-        simple_repeat = config['nanomonsv']['simple_repeat']
+        simple_repeat = config['annotation']['simple_repeat']
     output:
         filt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.txt",
         passed = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.txt",
@@ -59,8 +56,6 @@ rule nanomonsv_filter_simple_repeat_svtype:
     resources:
         mem = 2,
         walltime = 1
-    envmodules:
-        "nanomonsv/0.7.1"
     shell:
         """
         if [ "$(wc -l < "{input.result}")" -gt 1 ]; then
@@ -82,7 +77,7 @@ rule call_somatic_sv_nanomonsv_get:
         tumour_bai = "analysis/bam/{sample_t}.bam.bai",
         normal_bam = "analysis/bam/{sample_n}.bam",
         normal_bai = "analysis/bam/{sample_n}.bam",
-        control_panel_path = config['nanomonsv']['control_panel_path'],
+        control_panel_path = config['annotation']['control_panel_path'],
     output:
         txt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
         vcf = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.vcf",
@@ -101,8 +96,6 @@ rule call_somatic_sv_nanomonsv_get:
     resources:
         mem = 48,
         walltime = 48
-    envmodules:
-        "nanomonsv/0.7.1"
     shell:
         """
         nanomonsv get {params.tumour_prefix} {input.tumour_bam} {input.genome} \
@@ -138,8 +131,6 @@ rule nanomonsv_parse:
     resources:
         mem = 24,
         walltime = 48
-    envmodules:
-        "nanomonsv/0.7.1"
     shell:
         """
         nanomonsv parse {input.bam} {params.prefix} | tee -a {log}

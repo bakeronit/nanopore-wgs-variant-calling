@@ -30,7 +30,7 @@ rule qc_bam_stats:
         mem = 10,
         walltime = 12
     envmodules:
-        "mosdepth/0.2.9"
+        config['modules']['mosdepth']
     shell:
         """
         mosdepth -n -t {threads} {params.prefix} {input}

@@ -1,7 +1,0 @@
-cluster: "pbs-submit.py"
-cluster-status: "pbs-status.py"
-cluster-cancel: "qdel"
-jobs: 500
-use-envmodules: True
-printshellcmds: True
-latency-wait: "15"

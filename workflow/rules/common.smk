@@ -1,6 +1,8 @@
+import sys
 import pandas as pd
 from pathlib import Path
-import sys
+
+container: "/mnt/backedup/home/jiaZ/working/containers/definitions/long_read_wgs_pipeline.sif"
 
 samples_df = pd.read_csv(config['samples'])
 samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could be numbers only.
@@ -11,20 +13,21 @@ wildcard_constraints:
     sample_t="|".join(samples_df[samples_df['type']=='tumour']['sample_id'].unique()),
     sample_n="|".join(samples_df[samples_df['type']=='normal']['sample_id'].unique())
 
-## get all bam files of a sample
-def get_bam_of_runs(wildcards):
+def get_bam_of_flowcells(wildcards):
     sample = wildcards.sample
     align_results_path = Path(f'analysis/bam/{sample}')
     flowcell_ids = set(samples_df[ (samples_df['sample_id'] == sample) ].flowcell_id)
-    return [align_results_path / f'{run}.bam' for run in flowcell_ids]
+    return [align_results_path / f'{flowcell}.bam' for flowcell in flowcell_ids]
 
 def get_phased_vcf(wildcards):
     sample = wildcards.sample if hasattr(wildcards, 'sample') else wildcards.sample_t
-    donor_id = samples_df[samples_df['sample_id']==sample].donor_id.tolist()[0]
-    normal_sample_id = samples_df[(samples_df['donor_id']==donor_id) & (samples_df['type']=='normal')].sample_id.tolist()[0]
-    if config['phased_snv_from'] not in config['snv_calling']['germline']:
+    donor_id = samples_df[samples_df['sample_id']==sample]['donor_id'].iloc[0]
+    normal_sample_id = samples_df[(samples_df['donor_id']==donor_id) & (samples_df['type']=='normal')]['sample_id'].iloc[0]
+    phased_snv_from = config['snv_calling']['phased_snv_from']
+    if phased_snv_from not in config['snv_calling']['germline']:
         print("Warning: phased vcf is not generated from the germline snv caller you used for this workflow.")
-    match config['phased_snv_from'].lower():
+        phased_snv_from = config['snv_calling']['germline'][0]
+    match phased_snv_from.lower():
         case 'clair3':
             return f"analysis/snvs/clair3/{normal_sample_id}/phased_merge_output.vcf.gz"
         case 'pepper':
@@ -32,83 +35,63 @@ def get_phased_vcf(wildcards):
         case 'deepvariant':
             return f"analysis/snvs/deepvariant/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
         case _:
-            raise ValueError("haplotagged bam should only be generated from clair3, pepper, or deepvariant!")
+            raise ValueError(f"{phased_snv_from} is not supported!")
 
+def get_alignment_output(df):
+    return collect("analysis/bam/{sample}.bam", sample=df.sample_id.unique())
 
-class OutputCollector:
-    def __init__(self, df: pd.DataFrame, config):
-        self.df = df
-        self.config = config
-        self.germline_df = df[df['type'] == 'normal']
-        self.pairs = self.generate_paired_samples()
-    
-    def get_alignment_output(self):
-        return collect("analysis/bam/{sample}.bam", sample=self.df['sample_id'].unique())
+def get_qc_output(df):
+    return collect("analysis/qc/bam/{sample}.mosdepth.global.dist.txt", sample=df['sample_id'].unique()) + \
+        collect("analysis/qc/bam/{sample}.mosdepth.summary.txt", sample=df['sample_id'].unique()) + \
+        collect("analysis/qc/bam/{sample}.bamcov.txt", sample=df['sample_id'].unique())
 
-    def generate_paired_samples(self):
-        """generate tumour-normal pairs for each donor, there might be multiple tumour for one normal sample"""
-        pairs = []
-        for donor_id in self.df['donor_id'].unique():
-            tumour_sample = self.df[(self.df['donor_id'] == donor_id) & (self.df['type'] == 'tumour')]['sample_id'].unique().tolist()
-            normal_sample = self.df[(self.df['donor_id'] == donor_id) & (self.df['type'] == 'normal')]['sample_id'].unique().tolist()
-            if len(tumour_sample) > 1 and len(normal_sample) > 1:
-                raise ValueError('Multiple tumour vs multiple normal samples for one donor, could not determine the paired samples')
-            pairs += [{'donor': donor_id, 'tumour': t, 'normal': n} for t in tumour_sample for n in normal_sample]
-        return pairs
+def generate_paired_samples(df):
+    """
+    Generate test-control pairs for each donor, there might be multiple test samples with one control sample.
+    For cases with multiple control samples, it will raise an error.
+    """
+    pairs = []
+    for donor_id in df['donor_id'].unique():
+        tumour_sample = df[(df['donor_id'] == donor_id) & (df['type'] == 'tumour')]['sample_id'].unique()
+        normal_sample = df[(df['donor_id'] == donor_id) & (df['type'] == 'normal')]['sample_id'].unique()
+        if len(normal_sample) > 1:
+            raise ValueError(f'Multiple control samples for {donor_id}, could not determine the paired samples, please check your sample sheet.')
+        pairs += [{'donor': donor_id, 'tumour': t, 'normal': n} for t in tumour_sample for n in normal_sample]
+    return pairs
 
-    def get_snv_indel_calling_output(self):
-        results = []
-        for tool in self.config['snv_calling']['germline'] + self.config['snv_calling']['somatic']:
-            if tool.lower() == 'deepvariant':
-                results += collect("analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz", sample=self.germline_df['sample_id'].unique())
-            elif tool.lower() == 'clair3':
-                results += collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=self.germline_df['sample_id'].unique())
-            elif tool.lower() == 'deepsomatic':
-                results += [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.somatic.vcf.gz" for pair in self.pairs]
-            elif tool.lower() == 'clairs':
-                results += [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in self.pairs]
-            else:
-                sys.exit(f"Error: snv_caller {tool} is not supported.")
-        return results
-    
-    def get_savana_output(self, type='sv'):
-        if type == 'sv':
-            return [f"analysis/svs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.somatic.vcf" for pair in self.pairs]
-        elif type in ['cnv', 'cna']:
-            return [f"analysis/cnvs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}_segmented_absolute_copy_number.tsv" for pair in self.pairs]
-        else:
-            raise ValueError(f"Type {type} is not supported.")
+def get_snv_indel_output(df, caller):
+    pairs = generate_paired_samples(df)
+    results = {
+        'pepper': collect("analysis/snvs/pepper/{sample}/{sample}.vcf.gz", sample=df.sample_id.unique()),
+        'clair3': collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=df.sample_id.unique()),
+        'deepvariant': collect("analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz", sample=df.sample_id.unique()),
+        'clairs': [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in pairs],
+        'deepsomatic': [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.somatic.vcf.gz" for pair in pairs]
+    }
+    if results.get(caller.lower()) is None:
+        raise ValueError(f"Error: SNV caller {caller} is not supported.")
+    return results[caller.lower()]
 
-    def get_sv_calling_output(self):
-        nanomonsv = [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.sbnd.annot.proc.result.pass.txt" for pair in self.pairs]
-        savana = self.get_savana_output(type='sv')
-        severus = [f"analysis/svs/severus/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic.vcf" for pair in self.pairs]
+def get_sv_output(df, caller):
+    pairs = generate_paired_samples(df)
+    results = {
+        'sniffles': collect("analysis/svs/sniffles/{sample}/{sample}.vcf", sample=df.sample_id.unique()), 
+        'nanomonsv': [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.annot.proc.result.txt" for pair in pairs],
+        'severus': [f"analysis/svs/severus/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic.vcf" for pair in pairs],
+        'savana': [f"analysis/svs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.somatic.vcf" for pair in pairs]
+    }
+    if results.get(caller.lower()) is None:
+        raise ValueError(f"Error: SV caller {caller} is not supported.")
+    return results[caller.lower()]
 
-        return nanomonsv + savana + severus
-    
-    def get_qc_output(self):
-        return collect("analysis/qc/bam/{sample}.mosdepth.global.dist.txt", sample=self.df['sample_id'].unique()) + \
-            collect("analysis/qc/bam/{sample}.mosdepth.summary.txt", sample=self.df['sample_id'].unique()) + \
-            collect("analysis/qc/bam/{sample}.bamcov.txt", sample=self.df['sample_id'].unique())  
-
-def get_final_output(step='all'):
-    output_collector = OutputCollector(samples_df, config)
-    aligned_bam = output_collector.get_alignment_output()
-    snv = output_collector.get_snv_indel_calling_output()
-    sv = output_collector.get_sv_calling_output()
-    cnv = output_collector.get_savana_output(type="cnv")
-    qc = output_collector.get_qc_output()
-    final_output = []
-    match step:
-        case "align":
-            final_output = aligned_bam + qc
-        case "snv":
-            final_output = snv
-        case "sv":
-            final_output = sv
-        case "all":
-            final_output = snv + sv + qc #+ cnv JZ: can't test cnv due to small dataset.
-        case _:
-            raise ValueError(f"Step {step} is not supported.")
-
-    return final_output
+def get_final_output():
+    run_mode = config['run_mode']
+    final_results = [
+        get_alignment_output(samples_df),
+        get_qc_output(samples_df)
+    ]
+    if run_mode in ['germline', 'all']:
+        final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['germline']]
+    if run_mode in ['somatic', 'all']:
+        final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['somatic']]
+    return final_results

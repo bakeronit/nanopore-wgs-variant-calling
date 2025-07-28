@@ -1,20 +1,36 @@
-deepvariant: 
-  gpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_v1.6.1-gpu.sif
-  cpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_1.6.1.sif
+modules:
+  apptainer: apptainer/1.4.1
+  modkit: modkit/0.4.4-rc1
+  samtools: samtools/1.20
+  mosdepth: mosdepth/0.2.9
+
+pepper:
+  sif: /working/lab_nicw/jiaZ/imgs/pepper/pepper_deepvariant_r0.8.sif
+  params: /working/lab_nicw/jiaZ/data/ont_models/margin_phase
+  json:  /opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json  ### '/opt/margin_dir/params/phase/allParams.haplotag.ont-r94g507.json' if R9 flowcell
+
+deepvariant:
+  gpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_v1.9.0-gpu.sif
+  cpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_1.9.0.sif
 
 deepsomatic: 
-  gpu: /mnt/backedup/home/jiaZ/working/imgs/deepsomatic/deepsomatic_v1.7.0-gpu.sif
-  cpu: /mnt/backedup/home/jiaZ/working/imgs/deepsomatic/deepsomatic_1.7.0.sif
+  gpu: /working/lab_nicw/jiaZ/imgs/deepsomatic/deepsomatic_v1.9.0-gpu.sif
+  cpu: /working/lab_nicw/jiaZ/imgs/deepsomatic/deepsomatic_1.9.0.sif
 
 clair3:
-  sif: /mnt/backedup/home/jiaZ/working/imgs/clair3/clair3_v1.0.10.sif
-  model: /mnt/backedup/home/jiaZ/working/data/ont_models/clair3_models/r1041_e82_400bps_sup_v430
+  sif: /working/lab_nicw/jiaZ/imgs/clair3/clair3_v1.1.2.sif
+  model: /working/lab_nicw/jiaZ/data/ont_models/clair3_models/r1041_e82_400bps_sup_v520
 
 clairS:
-  sif: /mnt/backedup/home/jiaZ/working/imgs/clairs/clairs_v0.3.1.sif
+  sif: /working/lab_nicw/jiaZ/imgs/clairs/clairs_v0.3.1.sif
   platform: ont_r10_dorado_sup_5khz
-  indel_calling: True
-  subclone: True
+  indel_calling: true
+  subclone: false
 
-bamcov: /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov
-modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.3.1/modkit
+nanomonsv:
+  misc_scripts_path: /opt/nanomonsv_scripts
+
+sniffles:
+  venv: /working/lab_nicw/jiaZ/local/pyvenv/sniffles
+
+bamcov: /working/lab_nicw/jiaZ/local/bamcov/bamcov

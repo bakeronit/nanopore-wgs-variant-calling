@@ -20,10 +20,10 @@ rule call_germline_snv_deepvariant:
         walltime = 48
         #nvidia_gpu = 1,
     envmodules:
-        "singularity/3.7.1"
+        config['modules']['apptainer']
     shell:
         """
-        singularity run --nv {DEEPVARIANT_CPU_sif} \
+        apptainer run --nv {DEEPVARIANT_CPU_sif} \
         /opt/deepvariant/bin/run_deepvariant \
             --model_type ONT_R104 \
             --ref {input.genome} \
@@ -53,7 +53,7 @@ rule call_germline_snv_deepvariant_s1_make_examples:
         walltime = 48
     envmodules:
         "parallel/20151122",
-        "singularity/3.7.1"
+        config['modules']['apptainer']
     shell:
         """
         seq 0 $(( {threads} - 1 )) | parallel -q --halt 2 --line-buffer \
@@ -81,7 +81,7 @@ rule margin_phasing:
     output:
         vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf.gz"
     params:
-        json=lambda w: '/opt/margin_dir/params/phase/allParams.haplotag.ont-r94g507.json' if w.flowcell == 'R9' else '/opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json',
+        json=config['pepper']['json'],
         prefix="analysis/snvs/deepvariant/{sample}/{sample}",
         vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf",
         params_path = config['pepper']['params']

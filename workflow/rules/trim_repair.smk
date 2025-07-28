@@ -1,6 +1,5 @@
 # trim the heading of 40bp and tailing of 20bp for each read.
 # after trimmming, need to fix the MM tag.
-modkit = config['modkit']
 
 rule trim_reads:
     input:
@@ -12,12 +11,12 @@ rule trim_reads:
         mem = 24,
         walltime = 12
     envmodules:
-        "samtools/1.17"
+        config['modules']['samtools']
     params:
-        headcrop = config['filter']['headcrop'],
-        tailcrop = config['filter']['tailcrop'],
-        minlen = config['filter']['minlen'],
-        trim_len = config['filter']['headcrop'] + config['filter']['tailcrop']
+        headcrop = config['params']['headcrop'],
+        tailcrop = config['params']['tailcrop'],
+        minlen = config['params']['minlen'],
+        trim_len = config['params']['headcrop'] + config['params']['tailcrop']
     shell:
         """
         samtools fastq -@{threads} -T"*" {input} | \
@@ -37,7 +36,7 @@ rule sorted_original_ubam:
         mem = 24,
         walltime = 6
     envmodules:
-        "samtools/1.17"
+        config['modules']['samtools']
     shell:
         """
         samtools sort -@{threads} -n {input} > {output}
@@ -51,6 +50,8 @@ rule repair_MMtag:
         temp("analysis/ubam/{sample}/{run}.trimmed_repaired.ubam")
     log:
         "logs/modkit_repair/{sample}.{run}.log"
+    envmodules:
+        config['modules']['modkit']
     resources:
         mem = 20,
         walltime = 12
@@ -58,6 +59,6 @@ rule repair_MMtag:
     retries: 3
     shell:
         """
-        {modkit} repair --donor-bam {input.original} --acceptor-bam {input.trimmed} \
+        modkit repair --donor-bam {input.original} --acceptor-bam {input.trimmed} \
             --output-bam {output} --log-filepath {log} --threads {threads}
         """

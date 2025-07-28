@@ -1,6 +1,6 @@
 rule align_minimap2:
     input:
-        ubam = "analysis/ubam/{sample}/{run}.trimmed_repaired.ubam" if config['filter']['trim'] \
+        ubam = "analysis/ubam/{sample}/{run}.trimmed_repaired.ubam" if config['params']['trim'] \
             else "analysis/ubam/{sample}/{run}.ubam",
         genome = config['reference']['file']
     output:
@@ -11,7 +11,7 @@ rule align_minimap2:
         mem = 48,
         walltime = 24
     params:
-        qs = config['filter']['read_qs'],
+        qs = config['params']['read_qs'],
         rg = "\"@RG\\tID:{sample}.{run}\\tPL:ONT\\tSM:{sample}\""
     benchmark:
         "benchmarks/minimap2/{sample}.{run}.benchmark.txt"
@@ -28,7 +28,7 @@ rule align_minimap2:
 
 rule merge_bam:
     input:
-        get_bam_of_runs
+        get_bam_of_flowcells,
     output:
         bam = "analysis/bam/{sample}.bam",
         bai = "analysis/bam/{sample}.bam.bai"
