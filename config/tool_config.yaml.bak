@@ -1,0 +1,20 @@
+deepvariant: 
+  gpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_v1.6.1-gpu.sif
+  cpu: /mnt/backedup/home/jiaZ/working/imgs/deepvariant/deepvariant_1.6.1.sif
+
+deepsomatic: 
+  gpu: /mnt/backedup/home/jiaZ/working/imgs/deepsomatic/deepsomatic_v1.7.0-gpu.sif
+  cpu: /mnt/backedup/home/jiaZ/working/imgs/deepsomatic/deepsomatic_1.7.0.sif
+
+clair3:
+  sif: /mnt/backedup/home/jiaZ/working/imgs/clair3/clair3_v1.0.10.sif
+  model: /mnt/backedup/home/jiaZ/working/data/ont_models/clair3_models/r1041_e82_400bps_sup_v430
+
+clairS:
+  sif: /mnt/backedup/home/jiaZ/working/imgs/clairs/clairs_v0.3.1.sif
+  platform: ont_r10_dorado_sup_5khz
+  indel_calling: True
+  subclone: True
+
+bamcov: /mnt/backedup/home/jiaZ/working/local/bamcov/bamcov
+modkit: /mnt/backedup/home/jiaZ/working/local/modkit/v0.3.1/modkit

@@ -1,0 +1,139 @@
+executor: cluster-generic
+cluster-generic-submit-cmd: "/mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow/workflow/profiles/test/pbs-submit.py"
+jobscript: "/mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow/workflow/profiles/test/pbs-jobscript.sh"
+storage-http-max-requests-per-second: 10
+cluster-generic-cancel-cmd: "qdel"
+jobs: 500
+use-envmodules: True
+use-apptainer: True
+printshellcmds: True
+latency-wait: 15
+retries: 0
+
+default-resources:
+  walltime: 2
+  mem: 10
+
+set-threads:
+  bc_summary: 1
+  qc_bam_stats: 4
+  qc_bam_cov: 1
+  align_minimap2: 24
+  merge_bam: 10
+  trim_reads: 10
+  sorted_original_ubam: 12
+  repair_MMtag: 6
+  call_germline_snv_clair3: 12
+  call_germline_snv_deepvariant: 12
+  call_germline_snv_deepvariant_s1_make_examples: 12
+  margin_phasing: 12
+  call_germline_snv_pepper: 12
+  call_germline_sv_sniffles: 12
+  haplotagging_whatshap: 8
+  index_haplotagged_bam: 8
+  call_somatic_snv_deepsomatic: 12
+  extract_somatic_snv_deepsomatic: 1
+  call_somatic_snv_clairS: 12
+  nanomonsv_parse: 1
+  call_somatic_sv_nanomonsv_get: 10
+  nanomonsv_filter_simple_repeat_svtype: 1
+  nanomonsv_postprocess_sbnd: 1
+  call_somatic_sv_savana_run: 10
+  call_somatic_sv_savana_classify: 12
+  call_somatic_cnv_savana_cna: 10
+  call_somatic_sv_severus: 10
+  bamTobedmethyl: 10
+  modsummary: 8
+  bamtohapmod: 8
+
+set-resources:
+  bc_summary:
+    walltime: 10
+    mem: 10
+  qc_bam_stats:
+    walltime: 12
+    mem: 10
+  qc_bam_cov:
+    walltime: 10
+    mem: 32
+  align_minimap2:
+    walltime: 2
+    mem: 20
+  merge_bam:
+    walltime: 8
+    mem: 20
+  trim_reads:
+    walltime: 12
+    mem: 24
+  sorted_original_ubam:
+    walltime: 6
+    mem: 24
+  repair_MMtag:
+    walltime: 12
+    mem: 20
+  call_germline_snv_clair3:
+    walltime: 10
+    mem: 12
+  call_germline_snv_deepvariant:
+    walltime: 10
+    mem: 12
+  call_germline_snv_deepvariant_s1_make_examples:
+    walltime: 12
+    mem: 24
+  margin_phasing:
+    walltime: 12
+    mem: 24
+  call_germline_snv_pepper:
+    walltime: 12
+    mem: 12
+  call_germline_sv_sniffles:
+    walltime: 1
+    mem: 12
+  haplotagging_whatshap:
+    walltime: 1
+    mem: 12
+  index_haplotagged_bam:
+    walltime: 2
+    mem: 10
+  call_somatic_snv_deepsomatic:
+    walltime: 12
+    mem: 12
+  extract_somatic_snv_deepsomatic:
+    walltime: 2
+    mem: 10
+  call_somatic_snv_clairS:
+    walltime: 12
+    mem: 24
+  nanomonsv_parse:
+    walltime: 12
+    mem: 24
+  call_somatic_sv_nanomonsv_get:
+    walltime: 12
+    mem: 24
+  nanomonsv_filter_simple_repeat_svtype:
+    walltime: 1
+    mem: 2
+  nanomonsv_postprocess_sbnd:
+    walltime: 1
+    mem: 2
+  call_somatic_sv_savana_run:
+    walltime: 24
+    mem: 50
+  call_somatic_sv_savana_classify:
+    walltime: 2
+    mem: 20
+  call_somatic_cnv_savana_cna:
+    walltime: 12
+    mem: 40
+  call_somatic_sv_severus:
+    walltime: 12
+    mem: 12
+  bamTobedmethyl:
+    walltime: 12
+    mem: 10
+  modsummary:
+    walltime: 12
+    mem: 10
+  bamtohapmod:
+    walltime: 12
+    mem: 10
