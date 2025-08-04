@@ -10,8 +10,11 @@ samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could b
 wildcard_constraints:
     sample="|".join(samples_df["sample_id"].unique()),
     run="|".join(samples_df["flowcell_id"].unique()),
-    sample_t="|".join(samples_df[samples_df['type']=='tumour']['sample_id'].unique()),
-    sample_n="|".join(samples_df[samples_df['type']=='normal']['sample_id'].unique())
+
+if config['run_mode'] in ['somatic', 'all']:
+    wildcard_constraints:
+        sample_t="|".join(samples_df[samples_df['type']=='tumour']['sample_id'].unique()),
+        sample_n="|".join(samples_df[samples_df['type']=='normal']['sample_id'].unique())
 
 def get_bam_of_flowcells(wildcards):
     sample = wildcards.sample
@@ -51,6 +54,9 @@ def generate_paired_samples(df):
     For cases with multiple control samples, it will raise an error.
     """
     pairs = []
+    if config['run_mode'] not in ['somatic', 'all']: 
+        return pairs
+
     for donor_id in df['donor_id'].unique():
         tumour_sample = df[(df['donor_id'] == donor_id) & (df['type'] == 'tumour')]['sample_id'].unique()
         normal_sample = df[(df['donor_id'] == donor_id) & (df['type'] == 'normal')]['sample_id'].unique()
@@ -92,6 +98,7 @@ def get_final_output():
     ]
     if run_mode in ['germline', 'all']:
         final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['germline']]
+        final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['germline']]
     if run_mode in ['somatic', 'all']:
         final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['somatic']]
     return final_results

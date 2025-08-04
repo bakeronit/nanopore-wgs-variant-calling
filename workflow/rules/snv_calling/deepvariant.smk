@@ -1,4 +1,3 @@
-DEEPVARIANT_GPU_sif = config['deepvariant']['gpu']
 DEEPVARIANT_CPU_sif = config['deepvariant']['cpu']
 PEPPER_MARGIN_DV_sif = config['pepper']['sif']
 
@@ -18,12 +17,9 @@ rule call_germline_snv_deepvariant:
     resources:
         mem = 64,
         walltime = 48
-        #nvidia_gpu = 1,
-    envmodules:
-        config['modules']['apptainer']
+    container: DEEPVARIANT_CPU_sif
     shell:
         """
-        apptainer run --nv {DEEPVARIANT_CPU_sif} \
         /opt/deepvariant/bin/run_deepvariant \
             --model_type ONT_R104 \
             --ref {input.genome} \
@@ -32,44 +28,6 @@ rule call_germline_snv_deepvariant:
             --output_vcf {output.vcf} \
             --output_gvcf {output.gvcf} \
             --num_shards {threads} | tee -a {log}
-        """
-
-rule call_germline_snv_deepvariant_s1_make_examples:
-    input:
-        genome=config['reference']['file'],
-        bam="analysis/bam/{sample}.bam",
-        bai="analysis/bam/{sample}.bam.bai"
-    output:
-        examples="analysis/snvs/deepvariant/{sample}/examples/make_examples.tfrecord.gz"
-    params:
-        examples_path = "analysis/snvs/deepvariant/{sample}/examples"
-    log:
-        "logs/deepvariant/{sample}.make_examples.log"
-    benchmark:
-        "benchmarks/deepvariant/{sample}.make_examples.benchmark.txt"
-    threads: 30
-    resources:
-        mem = 64,
-        walltime = 48
-    envmodules:
-        "parallel/20151122",
-        config['modules']['apptainer']
-    shell:
-        """
-        seq 0 $(( {threads} - 1 )) | parallel -q --halt 2 --line-buffer \
-        singularity run {DEEPVARIANT_CPU_sif} /opt/deepvariant/bin/make_examples \
-            --mode calling \
-            --ref {input.genome} \
-            --reads {input.bam} \
-            --examples "{params.examples_path}/make_examples.tfrecord@{threads}.gz" \
-            --add_hp_channel --alt_aligned_pileup "diff_channels" \
-            --gvcf {output.examples}.gvcf.tfrecord@{threads}.gz \
-            --max_reads_per_partition 600  --min_mapping_quality 5 \
-            --parse_sam_aux_fields --partition_size 25000 --phase_reads \
-            --pileup_image_width 199 --norealign_reads \
-            --sample_name {wildcards.sample} --sort_by_haplotypes \
-            --track_ref_reads --vsc_min_fraction_indel 0.12 --vsc_min_fraction_snps 0.08 \
-            --task {}
         """
 
 rule margin_phasing:
@@ -81,10 +39,9 @@ rule margin_phasing:
     output:
         vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf.gz"
     params:
-        json=config['pepper']['json'],
         prefix="analysis/snvs/deepvariant/{sample}/{sample}",
         vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf",
-        params_path = config['pepper']['params']
+        json="/opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json" #haplotag mode.
     log:
         "logs/deepvariant/{sample}.margin_phasing.log"
     benchmark:
@@ -93,12 +50,8 @@ rule margin_phasing:
     resources:
         mem = 48,
         walltime=48
-    envmodules:
-        "singularity/3.7.1",
-        "htslib/1.16"
     shell:
         """
-        singularity exec --bind {params.params_path}:/opt/margin_dir/params/phase2 {PEPPER_MARGIN_DV_sif} \
         margin phase \
         {input.bam} {input.genome} {input.vcf} \
         {params.json} -t {threads} -o {params.prefix} --skipHaplotypeBAM | tee -a {log}

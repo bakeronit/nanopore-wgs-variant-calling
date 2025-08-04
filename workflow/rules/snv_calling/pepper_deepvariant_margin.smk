@@ -24,16 +24,14 @@ rule call_germline_snv_pepper:
     resources:
         mem = 64,
         walltime = 100
-    envmodules:
-        "singularity/3.7.1"
+    container: PEPPER_MARGIN_DV_sif
     params:
         output_dir = "analysis/snvs/pepper/{sample}",
-        mode = '--ont_r10_q20', 
+        mode = '--ont_r10_q20', ## TODO: need to be configurable to hifi or R9 ONT, but maybe this pepper_margin_deepvariant will be deprecated.
         #keep = "--skip_final_phased_bam" if config['phased_snv_from'] != "pepper" else "" ## save some space, no need to keep the haplotagged bam file after phasing, if we are not using the bam later.
         keep = "--skip_final_phased_bam"
     shell:
         """
-        singularity exec {PEPPER_MARGIN_DV_sif} \
         run_pepper_margin_deepvariant call_variant \
             --bam {input.bam} \
             --fasta {input.genome} \

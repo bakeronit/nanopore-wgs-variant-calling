@@ -1,14 +1,6 @@
-modules:
-  apptainer: apptainer/1.4.1
-  modkit: modkit/0.4.4-rc1
-  samtools: samtools/1.20
-  mosdepth: mosdepth/0.2.9
-
 pepper:
   sif: /working/lab_nicw/jiaZ/imgs/pepper/pepper_deepvariant_r0.8.sif
-  params: /working/lab_nicw/jiaZ/data/ont_models/margin_phase
-  json:  /opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json  ### '/opt/margin_dir/params/phase/allParams.haplotag.ont-r94g507.json' if R9 flowcell
-
+  
 deepvariant:
   gpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_v1.9.0-gpu.sif
   cpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_1.9.0.sif
@@ -29,8 +21,3 @@ clairS:
 
 nanomonsv:
   misc_scripts_path: /opt/nanomonsv_scripts
-
-sniffles:
-  venv: /working/lab_nicw/jiaZ/local/pyvenv/sniffles
-
-bamcov: /working/lab_nicw/jiaZ/local/bamcov/bamcov

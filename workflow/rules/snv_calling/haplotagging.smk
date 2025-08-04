@@ -12,14 +12,12 @@ rule haplotagging_whatshap:
     benchmark:
         "benchmarks/whatshap/{sample}.haplotagging_whatshap.benchmark.txt"
     threads: 8
-    envmodules:
-        "singularity/3.7.1"
+    container: Clair3_sif
     resources:
         mem = 48,
         walltime = 48
     shell:
         """
-        singularity exec {Clair3_sif} \
         whatshap haplotag -o {output.bam} \
         --reference {input.genome} {input.vcf} {input.bam} \
         --ignore-read-groups --tag-supplementary --skip-missing-contigs \
@@ -35,8 +33,6 @@ rule index_haplotagged_bam:
     resources:
         mem = 10,
         walltime = 2
-    envmodules:
-        "samtools/1.17"
     shell:
         """
         samtools index -@8 {input}

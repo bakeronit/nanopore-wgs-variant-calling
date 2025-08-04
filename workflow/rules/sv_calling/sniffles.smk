@@ -3,7 +3,7 @@ rule call_germline_sv_sniffles:
         ref = config['reference']['file'],
         bam = "analysis/bam/{sample}.bam"
     output:
-        "sv/sniffles/{sample}.vcf"
+        "analysis/svs/sniffles/{sample}/{sample}.vcf"
     params:
         minsvlen = config['params']['minsvlen']
     log:

@@ -1,9 +1,10 @@
-samples: /mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow/config/test.csv
-run_mode: "all"
+samples: /working/lab_nicw/jiaZ/github/nanopore_paired_tumour_workflow/config/test.csv
+run_mode: "germline"
+pull_containers: false # if running on qimrb cluster, no need to pull containers
 
 snv_calling:
     phased_snv_from: 'clair3'
-    germline: ['clair3']
+    germline: ['clair3','deepvariant']
     somatic: ['clairs']
 sv_calling:
     germline: ['sniffles']
@@ -11,14 +12,14 @@ sv_calling:
 
 reference:
     build: GRCh38
-    file: /mnt/backedup/home/jiaZ/working/data/genome/reference.fasta
+    file: /working/lab_nicw/jiaZ/data/genome/reference.fasta
 
 annotation:
-    blacklist: /mnt/backedup/home/jiaZ/working/data/hg38-blacklist.v2.bed.gz
-    pon: /mnt/backedup/home/jiaZ/working/data/pon/PoN_1000G_hg38.tsv.gz
-    vntr: /mnt/backedup/home/jiaZ/working/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed
-    control_panel_path: /mnt/backedup/home/jiaZ/working/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
-    simple_repeat: /mnt/backedup/home/jiaZ/working/data/nanomonsv/simpleRepeat.bed.gz
+    blacklist: /working/lab_nicw/jiaZ/data/hg38-blacklist.v2.bed.gz
+    pon: /working/lab_nicw/jiaZ/data/pon/PoN_1000G_hg38.tsv.gz
+    vntr: /working/lab_nicw/jiaZ/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed
+    control_panel_path: /working/lab_nicw/jiaZ/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
+    simple_repeat: /working/lab_nicw/jiaZ/data/nanomonsv/simpleRepeat.bed.gz
     gff: 
 
 params:

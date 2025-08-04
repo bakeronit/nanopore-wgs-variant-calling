@@ -20,14 +20,13 @@ rule call_somatic_snv_clairS:
     benchmark:
         "benchmarks/clairS/{sample_t}.{sample_n}.benchmark.txt"
     threads: 24
-    envmodules:
-        "singularity/3.7.1"
+    container: ClairS_sif
     resources:
         mem = 48,
         walltime = 48
     shell:
         """
-        singularity exec {ClairS_sif} /opt/bin/run_clairs \
+        /opt/bin/run_clairs \
             --tumor_bam_fn {input.tumor_bam} \
             --normal_bam_fn {input.normal_bam} \
             --ref_fn {input.genome} \

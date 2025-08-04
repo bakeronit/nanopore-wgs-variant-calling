@@ -25,7 +25,7 @@ set-threads:
   repair_MMtag: 6
   call_germline_snv_clair3: 12
   call_germline_snv_deepvariant: 12
-  call_germline_snv_deepvariant_s1_make_examples: 12
+  call_germline_snv_deepvariant_s1_make_examples: 20
   margin_phasing: 12
   call_germline_snv_pepper: 12
   call_germline_sv_sniffles: 12

@@ -27,11 +27,10 @@ rule call_germline_snv_clair3:
     resources:
         mem = 48,
         walltime = 48
-    envmodules:
-        "singularity/3.7.1"
+    container: Clair3_sif
     shell:
         """
-        singularity exec {Clair3_sif} /opt/bin/run_clair3.sh \
+        /opt/bin/run_clair3.sh \
             --bam_fn={input.bam} \
             --ref_fn={input.genome} \
             --sample_name={wildcards.sample} \

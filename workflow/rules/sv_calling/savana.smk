@@ -28,14 +28,8 @@ rule call_somatic_sv_savana_run:
     resources:
         mem = 600,
         walltime = 24
-    envmodules:
-        "conda-envs/base"
     shell:
         """
-        set +eu
-        conda  activate ~/working/local/micromanba_envs/savana1.20
-        set -eu
-        
         if [ "$(ls -A {params.outdir})" ]; then   # need to make sure the outdir is empty
             rm -f {params.outdir}/*
         fi
@@ -66,14 +60,8 @@ rule call_somatic_sv_savana_classify:
     resources:
         mem = 20,
         walltime = 48
-    envmodules:
-        "conda-envs/base"
     shell:
         """
-        set +eu
-        conda  activate ~/working/local/micromanba_envs/savana1.20
-        set -eu
-
         savana classify \
         --vcf {input.vcf} \
         --output {output.vcf} \
@@ -116,14 +104,8 @@ rule call_somatic_cnv_savana_cna:
     resources:
         mem = 400,
         walltime = 48
-    envmodules:
-        "conda-envs/base"
     shell:
         """
-        set +eu
-        conda activate ~/working/local/micromanba_envs/savana1.20
-        set -eu
-
         savana cna --tumour {input.tumour_bam} \
         --normal {input.normal_bam} \
         --ref {input.genome} \

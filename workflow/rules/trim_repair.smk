@@ -10,8 +10,6 @@ rule trim_reads:
     resources:
         mem = 24,
         walltime = 12
-    envmodules:
-        config['modules']['samtools']
     params:
         headcrop = config['params']['headcrop'],
         tailcrop = config['params']['tailcrop'],
@@ -35,8 +33,6 @@ rule sorted_original_ubam:
     resources:
         mem = 24,
         walltime = 6
-    envmodules:
-        config['modules']['samtools']
     shell:
         """
         samtools sort -@{threads} -n {input} > {output}
@@ -50,8 +46,6 @@ rule repair_MMtag:
         temp("analysis/ubam/{sample}/{run}.trimmed_repaired.ubam")
     log:
         "logs/modkit_repair/{sample}.{run}.log"
-    envmodules:
-        config['modules']['modkit']
     resources:
         mem = 20,
         walltime = 12

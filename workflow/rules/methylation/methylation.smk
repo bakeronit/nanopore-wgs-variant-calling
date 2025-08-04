@@ -1,5 +1,3 @@
-modkit = config['modkit']
-
 rule bamTobedmethyl:
     input:
         bam = "analysis/bam/{flowcell}/{mode}/{sample}.bam",
@@ -18,11 +16,9 @@ rule bamTobedmethyl:
         "logs/modkit/{flowcell}.{mode}.{sample}.pileup.log"
     benchmark:
         "benchmarks/modkit/{flowcell}.{mode}.{sample}.benchmark.txt"
-    envmodules:
-        "htslib/1.17"
     shell:
         """
-        {modkit} pileup {input.bam} {params.bed} --ref {input.genome} \
+        modkit pileup {input.bam} {params.bed} --ref {input.genome} \
         --threads {threads} --combine-strands --cpg --log-filepath {log}
         bgzip {params.bed}
 
@@ -65,13 +61,11 @@ rule bamtohapmod:
     resources:
         mem = 10,
         walltime = 12
-    envmodules:
-        "htslib/1.17"
     log:
         "logs/modkit/{flowcell}.{mode}.{sample}.pileup.HP.log"
     shell:
         """
-        {modkit} pileup {input.hp_tagged_bam} {params.outdir} --ref {input.genome} --partition-tag HP \
+        modkit pileup {input.hp_tagged_bam} {params.outdir} --ref {input.genome} --partition-tag HP \
         --threads {threads} --combine-strands --cpg --prefix {wildcards.sample} --log-filepath {log}
         bgzip {params.hp1_bed}
         bgzip {params.hp2_bed}

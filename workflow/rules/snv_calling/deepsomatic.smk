@@ -14,14 +14,13 @@ rule call_somatic_snv_deepsomatic:
     benchmark:
         "benchmarks/deepsomatic/{sample_t}.{sample_n}.benchmark.txt"
     threads: 24
-    envmodules:
-        "singularity/3.7.1"
+    container: DP_somatic_sif
     resources:
         mem=64,  # using 30gb will cause Cgroup out of memory error
         walltime=200
     shell:
         """
-        singularity exec {DP_somatic_sif} /opt/deepvariant/bin/deepsomatic/run_deepsomatic  \
+        /opt/deepvariant/bin/deepsomatic/run_deepsomatic  \
         --model_type=ONT \
         --ref={input.genome} \
         --reads_normal={input.normal_bam} \
@@ -39,9 +38,6 @@ rule extract_somatic_snv_deepsomatic:
     output:
         "analysis/snvs/deepsomatic/{sample_t}.{sample_n}/output.somatic.vcf.gz"
     threads: 1
-    envmodules:
-        "bcftools/1.19",
-        "htslib/1.19.1"
     shell:
         """
         bcftools view -i 'GT="1/1"' -f PASS {input.vcf} | bgzip -c > {output}

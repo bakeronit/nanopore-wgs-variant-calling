@@ -24,14 +24,8 @@ rule call_somatic_sv_severus:
     resources:
         mem = 64,
         walltime = 48
-    envmodules:
-        "conda-envs/base"
     shell:
         """
-        #set +eu
-        #conda  activate ~/working/local/micromanba_envs/severus1.2
-        #set -eu
-
         severus --target-bam {input.hp_tagged_tumour_bam} \
             --control-bam {input.hp_tagged_normal_bam} \
             --out-dir {params.outdir} \

@@ -1,7 +1,6 @@
 ## use Delly to call somatic SV from ONT
 ## This workflow only take one pair of tumour-normal samples as input 
 ## you might consider building a multi-sample control panel with all normal samples if you have a cohort.
-delly = config['delly']['path']
 
 rule call_somatic_sv_delly:  # paired-samples analysis
     input:
@@ -24,13 +23,10 @@ rule call_somatic_sv_delly:  # paired-samples analysis
     resources:
         mem = 48,
         walltime = 48
-    envmodules:
-        "samtools/1.17",
-        "bcftools/1.19"
     shell:
         """
         export OMP_NUM_THREADS={threads} # delly primarily parallises on the sample level.
-        {delly} lr \
+        delly lr \
             -t ALL \
             -y ont \
             -o {output.bcf} {params.excl} \
@@ -44,7 +40,7 @@ rule call_somatic_sv_delly:  # paired-samples analysis
         CID=$(get_sample_id "{input.normal_bam}")
         printf "${{TID}}\\ttumor\\n${{CID}}\\tcontrol\\n" > {output.samples_tsv}
 
-        {delly} filter \
+        delly filter \
             -f somatic \
             -p \
             -s {output.samples_tsv} \
