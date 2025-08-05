@@ -70,7 +70,7 @@ def get_snv_indel_output(df, caller):
     results = {
         'pepper': collect("analysis/snvs/pepper/{sample}/{sample}.vcf.gz", sample=df.sample_id.unique()),
         'clair3': collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=df.sample_id.unique()),
-        'deepvariant': collect("analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz", sample=df.sample_id.unique()),
+        'deepvariant': collect("analysis/snvs/deepvariant/{sample}/{sample}.{suffix}", sample=df.sample_id.unique(), suffix=['visual_report.html', 'vcf.gz','phased.vcf.gz']),
         'clairs': [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in pairs],
         'deepsomatic': [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.somatic.vcf.gz" for pair in pairs]
     }

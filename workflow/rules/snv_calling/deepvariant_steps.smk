@@ -8,6 +8,7 @@ workdir: "/mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow
 #NSHARD = int(config['deepvariant']['make_examples_theads'])
 NSHARD=12
 
+
 def tfrecord_suffix(ncpu: int, json=False):
     suffix = [f".tfrecord-{i:05d}-of-{ncpu:05d}.gz" for i in range(ncpu)]
     if json:
@@ -136,23 +137,4 @@ rule call_germline_snv_deepvariant_s3_postprocess_variants:
         --gvcf_outfile {output.gvcf} \
         --nonvariant_site_tfrecord_path {params.gvcf_name} \
         --sample_name {wildcards.sample}
-        """
-
-rule call_germline_snv_deepvariant_s4_vcf_stats_report:
-    input:
-        rules.call_germline_snv_deepvariant_s3_postprocess_variants.output.vcf
-    output:
-        "analysis/snvs/deepvariant/{sample}/{sample}.visual_report.html"
-    params:
-        outbase = "analysis/snvs/deepvariant/{sample}/{sample}"
-    threads: 1
-    resources:
-        mem = 10,
-        walltime = 10
-    container: DEEPVARIANT_CPU_sif
-    shell:
-        """
-        vcf_stats_report \
-        --input_vcf {input} \
-        --outfile_base {params.outbase}
         """
