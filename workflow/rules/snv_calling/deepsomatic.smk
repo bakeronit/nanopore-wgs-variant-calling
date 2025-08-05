@@ -16,11 +16,11 @@ rule call_somatic_snv_deepsomatic:
     threads: 24
     container: DP_somatic_sif
     resources:
-        mem=64,  # using 30gb will cause Cgroup out of memory error
-        walltime=200
+        mem=36,  # using 30gb will cause Cgroup out of memory error
+        walltime=80
     shell:
         """
-        /opt/deepvariant/bin/deepsomatic/run_deepsomatic  \
+        run_deepsomatic  \
         --model_type=ONT \
         --ref={input.genome} \
         --reads_normal={input.normal_bam} \

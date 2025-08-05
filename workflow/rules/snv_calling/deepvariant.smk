@@ -20,7 +20,7 @@ rule call_germline_snv_deepvariant:
     container: DEEPVARIANT_CPU_sif
     shell:
         """
-        /opt/deepvariant/bin/run_deepvariant \
+        run_deepvariant \
             --model_type ONT_R104 \
             --ref {input.genome} \
             --reads {input.bam} \
@@ -28,34 +28,4 @@ rule call_germline_snv_deepvariant:
             --output_vcf {output.vcf} \
             --output_gvcf {output.gvcf} \
             --num_shards {threads} | tee -a {log}
-        """
-
-rule margin_phasing:
-    input:
-        bam="analysis/bam/{sample}.bam",
-        bai="analysis/bam/{sample}.bam.bai",
-        genome=config['reference']['file'],
-        vcf="analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz"
-    output:
-        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf.gz"
-    params:
-        prefix="analysis/snvs/deepvariant/{sample}/{sample}",
-        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf",
-        json="/opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json" #haplotag mode.
-    log:
-        "logs/deepvariant/{sample}.margin_phasing.log"
-    benchmark:
-        "benchmarks/deepvariant/{sample}.margin_phasing.benchmark.txt"
-    threads: 24
-    resources:
-        mem = 48,
-        walltime=48
-    shell:
-        """
-        margin phase \
-        {input.bam} {input.genome} {input.vcf} \
-        {params.json} -t {threads} -o {params.prefix} --skipHaplotypeBAM | tee -a {log}
-
-        bgzip {params.vcf}
-        tabix -p vcf {output.vcf}
         """
