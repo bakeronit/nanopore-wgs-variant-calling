@@ -17,32 +17,53 @@ rule call_germline_snv_deepvariant_vcf_stats_report:
         --outfile_base {params.outbase}
         """
 
-rule margin_phasing:
+rule filter_passed_variants:
     input:
-        bam="analysis/bam/{sample}.bam",
-        bai="analysis/bam/{sample}.bam.bai",
-        genome=config['reference']['file'],
-        vcf="analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz"
+        "analysis/snvs/deepvariant/{sample}/{sample}.vcf.gz"
     output:
-        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf.gz"
-    params:
-        prefix="analysis/snvs/deepvariant/{sample}/{sample}",
-        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.phased.vcf",
-        json="/opt/margin_dir/params/phase2/allParams.haplotag.ont-r104q20.json" #haplotag mode.
-    log:
-        "logs/deepvariant/{sample}.margin_phasing.log"
-    benchmark:
-        "benchmarks/deepvariant/{sample}.margin_phasing.benchmark.txt"
-    threads: 24
+        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz",
+        tbi = "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz.tbi"
+    threads: 1
     resources:
-        mem = 48,
-        walltime=48
+        mem = 6,
+        walltime = 2
     shell:
         """
-        margin phase \
-        {input.bam} {input.genome} {input.vcf} \
-        {params.json} -t {threads} -o {params.prefix} --skipHaplotypeBAM | tee -a {log}
+        bcftools view -i 'FILTER="PASS"' -Oz -o {output.vcf} {input}
+        bcftools index -t {output.vcf}
+        """
+    
+#rule get_chromosomes:
+#    input:
+#        "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz"
+#    output:
+#        pipe("analysis/snvs/deepvariant/{sample}/chromosomes.txt")
+#    threads: 1
+#    resources:
+#        mem = 6,
+#        walltime = 2
+#    shell:
+#        """
+#        bcftools index --stats {input} | cut -f 1 > {output}
+#        """
 
-        bgzip {params.vcf}
-        tabix -p vcf {output.vcf}
+rule whatshap_phasing:
+    input:
+        reference = config['reference']['file'],
+        bam = "analysis/bam/{sample}.bam",
+        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz"
+    output:
+        "analysis/snvs/deepvariant/{sample}/{sample}.passed.phased.vcf.gz"
+    threads: 12
+    resources:
+        mem = 24,
+        walltime = 24
+    shell:
+        """
+        whatshap phase \
+        --output {output} \
+        --reference {input.reference} \
+        --ignore-read-groups \
+        {input.vcf} \
+        {input.bam}
         """

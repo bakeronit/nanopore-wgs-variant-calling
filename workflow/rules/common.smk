@@ -36,7 +36,7 @@ def get_phased_vcf(wildcards):
         case 'pepper':
             return f"analysis/snvs/pepper/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
         case 'deepvariant':
-            return f"analysis/snvs/deepvariant/{normal_sample_id}/{normal_sample_id}.phased.vcf.gz"
+            return f"analysis/snvs/deepvariant/{normal_sample_id}/{normal_sample_id}.passed.phased.vcf.gz"
         case _:
             raise ValueError(f"{phased_snv_from} is not supported!")
 
@@ -70,7 +70,7 @@ def get_snv_indel_output(df, caller):
     results = {
         'pepper': collect("analysis/snvs/pepper/{sample}/{sample}.vcf.gz", sample=df.sample_id.unique()),
         'clair3': collect("analysis/snvs/clair3/{sample}/merge_output.vcf.gz", sample=df.sample_id.unique()),
-        'deepvariant': collect("analysis/snvs/deepvariant/{sample}/{sample}.{suffix}", sample=df.sample_id.unique(), suffix=['visual_report.html', 'vcf.gz','phased.vcf.gz']),
+        'deepvariant': collect("analysis/snvs/deepvariant/{sample}/{sample}.{suffix}", sample=df.sample_id.unique(), suffix=['visual_report.html', 'passed.phased.vcf.gz']),
         'clairs': [f"analysis/snvs/clairS/{pair['tumour']}.{pair['normal']}/output.vcf.gz" for pair in pairs],
         'deepsomatic': [f"analysis/snvs/deepsomatic/{pair['tumour']}.{pair['normal']}/output.somatic.vcf.gz" for pair in pairs]
     }
@@ -82,7 +82,7 @@ def get_sv_output(df, caller):
     pairs = generate_paired_samples(df)
     results = {
         'sniffles': collect("analysis/svs/sniffles/{sample}/{sample}.vcf", sample=df.sample_id.unique()), 
-        'nanomonsv': [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.annot.proc.result.txt" for pair in pairs],
+        'nanomonsv': [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.result.simple_repeat.svtype.txt" for pair in pairs],
         'severus': [f"analysis/svs/severus/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic.vcf" for pair in pairs],
         'savana': [f"analysis/svs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.somatic.vcf" for pair in pairs]
     }

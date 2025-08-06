@@ -1,8 +1,9 @@
 pepper:
   sif: /working/lab_nicw/jiaZ/imgs/pepper/pepper_deepvariant_r0.8.sif
+  params: /working/lab_nicw/jiaZ/data/ont_models/margin_phase
   
 deepvariant:
-  run_as_steps: false
+  run_as_steps: true
   gpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_v1.9.0-gpu.sif
   cpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_1.9.0.sif
 

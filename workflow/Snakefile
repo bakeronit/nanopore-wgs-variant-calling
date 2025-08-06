@@ -1,16 +1,14 @@
 from snakemake.utils import min_version
-#min_version('7.32.4') # this is where I started.
-min_version('8.20.5') # this is the latest version I have tested.
+from pathlib import Path
+
+min_version('8.20.5')
 
 ##### setup report #####
 if not config:
-    configfile: "../config/config.yaml"
-    configfile: "../config/tool_config.yaml"
-
-##### define the workdir for workflow
-#workdir: "../test"
+    configfile: Path(workflow.basedir).parent / "config/config.yaml"
 
 #report: "report/workflow.rst"
+workdir: "work"
 
 localrules:
     all,
