@@ -15,11 +15,11 @@ def tfrecord_suffix(ncpu: int, json=False):
         suffix = [f"{s}.example_info.json" for s in suffix]
     return suffix
 
-SAMPLES = ['COLO829_BL']
-rule all:
-    input:
-        #expand("analysis/snvs/deepvariant/{sample}/examples/make_examples{suffix}", sample=SAMPLES, suffix=tfrecord_suffix(NSHARD)),
-        expand("analysis/snvs/deepvariant/{sample}/{sample}.visual_report.html", sample=SAMPLES)
+#SAMPLES = ['COLO829_BL']
+#rule all:
+#    input:
+#        #expand("analysis/snvs/deepvariant/{sample}/examples/make_examples{suffix}", sample=SAMPLES, suffix=tfrecord_suffix(NSHARD)),
+#        expand("analysis/snvs/deepvariant/{sample}/{sample}.visual_report.html", sample=SAMPLES)
 
 rule call_germline_snv_deepvariant_s1_make_examples:
     input:

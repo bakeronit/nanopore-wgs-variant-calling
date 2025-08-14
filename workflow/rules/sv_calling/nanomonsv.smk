@@ -49,24 +49,15 @@ rule nanomonsv_filter_simple_repeat_svtype:
         result = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.txt",
         simple_repeat = config['annotation']['simple_repeat']
     output:
-        filt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.txt",
-        passed = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.txt",
-        svtype = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.filt.pass.svtype.txt"
+        filt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.simple_repeat.svtype.txt",
+        passed = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.simple_repeat.svtype.passed.txt",
     threads: 1
     resources:
         mem = 2,
         walltime = 1
-    shell:
-        """
-        if [ "$(wc -l < "{input.result}")" -gt 1 ]; then
-            python3 {misc}/add_simple_repeat.py {input.result} {output.filt} {input.simple_repeat}
-            head -n 1 {output.filt} > {output.passed} 
-            tail -n +2 {output.filt} | grep PASS >> {output.passed}
-            python3 {misc}/sv_type.py {output.passed} {output.svtype}
-        else # no sv called, usually in test data
-            touch {output}
-        fi
-        """
+    script:
+        "../../scripts/nanomonsv_postprocess.py"
+        
 
 rule call_somatic_sv_nanomonsv_get:
     input:

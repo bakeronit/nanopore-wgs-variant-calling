@@ -1,0 +1,242 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: Configuration schema for nanopore DNA variant calling workflow
+type: object
+
+required:
+  - run_mode
+  - pull_containers
+  - samples
+  - reference
+  - snv_calling
+  - sv_calling
+
+properties:
+  samples:
+    type: string
+    description: Path to CSV file containing sample information
+    pattern: ".*\\.csv$"
+
+  run_mode:
+    type: string
+    description: Analysis mode to run
+    enum: ["germline", "somatic", "all"]
+    default: "all"
+
+  pull_containers:
+    type: boolean
+    description: Whether to pull containers (set to false on qimrb cluster)
+    default: false
+
+  snv_calling:
+    type: object
+    description: SNV calling configuration
+    required:
+      - germline
+      - somatic
+    properties:
+      phased_snv_from:
+        type: string
+        description: Which caller to use for phased SNVs
+        enum: ["clair3", "pepper", "deepvariant"]
+        default: "clair3"
+      germline:
+        type: array
+        description: List of germline SNV callers to run
+        items:
+          type: string
+          enum: ["clair3", "deepvariant", "pepper"]
+        minItems: 1
+        uniqueItems: true
+      somatic:
+        type: array
+        description: List of somatic SNV callers to run
+        items:
+          type: string
+          enum: ["clairs", "deepsomatic"]
+        minItems: 1
+        uniqueItems: true
+
+  sv_calling:
+    type: object
+    description: SV calling configuration
+    required:
+      - germline
+      - somatic
+    properties:
+      germline:
+        type: array
+        description: List of germline SV callers to run
+        items:
+          type: string
+          enum: ["sniffles"]
+        minItems: 1
+        uniqueItems: true
+      somatic:
+        type: array
+        description: List of somatic SV callers to run
+        items:
+          type: string
+          enum: ["savana", "severus", "nanomonsv"]
+        minItems: 1
+        uniqueItems: true
+
+  reference:
+    type: object
+    description: Reference genome configuration
+    required:
+      - build
+      - file
+    properties:
+      build:
+        type: string
+        description: Reference genome build, e.g. GRCh38, GRCh37. can be custom name for different reference.
+        default: "GRCh38"
+      file:
+        type: string
+        description: Path to reference FASTA file
+        pattern: ".*\\.(fasta|fa|fna)(\\.gz)?$"
+
+  annotation:
+    type: object
+    description: Annotation files configuration
+    properties:
+      blacklist:
+        type: string
+        description: Path to blacklist BED file
+        pattern: ".*\\.bed(\\.gz)?$"
+      pon:
+        type: string
+        description: Path to Panel of Normals file
+        pattern: ".*\\.tsv(\\.gz)?$"
+      vntr:
+        type: string
+        description: Path to VNTR BED file
+        pattern: ".*\\.bed(\\.gz)?$"
+      control_panel_path:
+        type: string
+        description: Path to nanomonsv control panel directory, e.g. /path/to/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
+      simple_repeat:
+        type: string
+        description: Path to simple repeat BED file
+        pattern: ".*\\.bed(\\.gz)?$"
+
+  params:
+    type: object
+    description: General parameters for read processing
+    properties:
+      trim:
+        type: boolean
+        description: Whether to trim reads, you can make decisions based on the basecalling QC reports
+        default: true
+      read_qs:
+        type: integer
+        description: Minimum read quality score
+        minimum: 0
+        default: 10
+      headcrop:
+        type: integer
+        description: Number of bases to crop from read start
+        minimum: 0
+        default: 40
+      tailcrop:
+        type: integer
+        description: Number of bases to crop from read end
+        minimum: 0
+        default: 20
+      minlen:
+        type: integer
+        description: Minimum read length after trimming
+        minimum: 0
+        default: 100
+      minsvlen:
+        type: integer
+        description: Minimum SV length to consider
+        minimum: 0
+        default: 50
+
+  pepper:
+    type: object
+    description: Pepper configuration
+    properties:
+      sif:
+        type: string
+        description: Path to Pepper Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+      params:
+        type: string
+        description: Path to Pepper model parameters
+
+  deepvariant:
+    type: object
+    description: DeepVariant configuration
+    properties:
+      run_as_steps:
+        type: boolean
+        description: Whether to run DeepVariant as separate steps
+        default: false
+      gpu:
+        type: string
+        description: Path to GPU-enabled DeepVariant Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+      cpu:
+        type: string
+        description: Path to CPU-only DeepVariant Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+
+  deepsomatic:
+    type: object
+    description: DeepSomatic configuration
+    properties:
+      gpu:
+        type: string
+        description: Path to GPU-enabled DeepSomatic Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+      cpu:
+        type: string
+        description: Path to CPU-only DeepSomatic Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+
+  clair3:
+    type: object
+    description: Clair3 configuration
+    properties:
+      sif:
+        type: string
+        description: Path to Clair3 Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+      model:
+        type: string
+        description: Path to Clair3 model directory
+
+  clairS:
+    type: object
+    description: ClairS configuration
+    properties:
+      sif:
+        type: string
+        description: Path to ClairS Singularity image (.sif file) or container URI (docker://, library://, shub://)
+        pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+      platform:
+        type: string
+        description: Sequencing platform for ClairS
+        enum: ["ont_r9_guppy", "ont_r10_dorado_sup_4khz", "ont_r10_dorado_sup_5khz"]
+        default: "ont_r10_dorado_sup_5khz"
+      indel_calling:
+        type: boolean
+        description: Whether to enable indel calling
+        default: true
+      subclone:
+        type: boolean
+        description: Whether to enable subclone calling, only available for clairS v0.3.0 and later
+        default: false
+
+  nanomonsv:
+    type: object
+    description: Nanomonsv configuration
+    properties:
+      misc_scripts_path:
+        type: string
+        description: Path to nanomonsv miscellaneous scripts
+        default: "/opt/nanomonsv_scripts"
+
+additionalProperties: false
