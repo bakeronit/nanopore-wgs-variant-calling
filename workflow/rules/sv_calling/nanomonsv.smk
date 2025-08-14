@@ -50,13 +50,13 @@ rule nanomonsv_filter_simple_repeat_svtype:
         simple_repeat = config['annotation']['simple_repeat']
     output:
         filt = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.simple_repeat.svtype.txt",
-        passed = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.simple_repeat.svtype.pass.txt",
+        passed = "analysis/svs/nanomonsv/{sample_t}.{sample_n}/{sample_t}.{sample_n}.nanomonsv.result.simple_repeat.svtype.passed.txt",
     threads: 1
     resources:
         mem = 2,
         walltime = 1
     script:
-        "../../scripts/nanomonsv_add_simple_repeat_svtype.py"
+        "../../scripts/nanomonsv_postprocess.py"
         
 
 rule call_somatic_sv_nanomonsv_get:

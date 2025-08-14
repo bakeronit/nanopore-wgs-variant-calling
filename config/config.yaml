@@ -5,7 +5,7 @@ pull_containers: false # if running on qimrb cluster, no need to pull containers
 snv_calling:
     phased_snv_from: 'clair3'
     germline: ['clair3','deepvariant']
-    somatic: ['clairs']
+    somatic: ['clairs','deepsomatic']
 sv_calling:
     germline: ['sniffles']
     somatic: ['savana','severus','nanomonsv']
@@ -20,7 +20,6 @@ annotation:
     vntr: /working/lab_nicw/jiaZ/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed
     control_panel_path: /working/lab_nicw/jiaZ/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
     simple_repeat: /working/lab_nicw/jiaZ/data/nanomonsv/simpleRepeat.bed.gz
-    gff: 
 
 params:
     trim: true
@@ -36,7 +35,7 @@ pepper:
   params: /working/lab_nicw/jiaZ/data/ont_models/margin_phase
   
 deepvariant:
-  run_as_steps: true
+  run_as_steps: false
   gpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_v1.9.0-gpu.sif
   cpu: /working/lab_nicw/jiaZ/imgs/deepvariant/deepvariant_1.9.0.sif
 
@@ -49,10 +48,10 @@ clair3:
   model: /working/lab_nicw/jiaZ/data/ont_models/clair3_models/r1041_e82_400bps_sup_v520
 
 clairS:
-  sif: /working/lab_nicw/jiaZ/imgs/clairs/clairs_v0.3.1.sif
+  sif: /working/lab_nicw/jiaZ/imgs/clairs/clairs_v0.4.3.sif
   platform: ont_r10_dorado_sup_5khz
   indel_calling: true
-  subclone: false
+  subclone: true
 
 nanomonsv:
   misc_scripts_path: /opt/nanomonsv_scripts

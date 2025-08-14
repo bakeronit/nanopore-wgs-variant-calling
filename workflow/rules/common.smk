@@ -1,11 +1,15 @@
 import sys
 import pandas as pd
 from pathlib import Path
+from snakemake.utils import validate
 
 container: "/mnt/backedup/home/jiaZ/working/containers/definitions/long_read_wgs_pipeline.sif"
 
+validate(config, schema=Path(workflow.basedir, "schema/config.schema.yaml"))
+
 samples_df = pd.read_csv(config['samples'])
 samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could be numbers only.
+
 
 wildcard_constraints:
     sample="|".join(samples_df["sample_id"].unique()),
@@ -15,6 +19,31 @@ if config['run_mode'] in ['somatic', 'all']:
     wildcard_constraints:
         sample_t="|".join(samples_df[samples_df['type']=='tumour']['sample_id'].unique()),
         sample_n="|".join(samples_df[samples_df['type']=='normal']['sample_id'].unique())
+
+def check_container_config():
+    if not config.get('pull_containers', False):
+        global_container = workflow.global_container_img
+        if global_container and any(global_container.startswith(prefix) for prefix in ['docker://', 'library://', 'shub://', 'oras://']):
+            print(f"WARNING: Global container directive contains a container URI ({global_container}) but pull_containers is set to False.", file=sys.stderr)
+            print(f"         Set pull_containers: true in config to enable container pulling, or provide a local .sif file path.", file=sys.stderr)
+        
+        container_fields = [
+            ('deepvariant', 'gpu'),
+            ('deepvariant', 'cpu'),
+            ('deepsomatic', 'gpu'),
+            ('deepsomatic', 'cpu'),
+            ('pepper', 'sif'),
+            ('clair3', 'sif'),
+            ('clairS', 'sif')
+        ]
+        
+        for tool, field in container_fields:
+            if tool in config and field in config[tool]:
+                container_path = config[tool][field]
+                if any(container_path.startswith(prefix) for prefix in ['docker://', 'library://', 'shub://', 'oras://']):
+                    print(f"WARNING: {tool}.{field} contains a container URI ({container_path}) but pull_containers is set to False.", file=sys.stderr)
+                    print(f"         Set pull_containers: true in config to enable container pulling, or provide a local .sif file path.", file=sys.stderr)
+
 
 def get_bam_of_flowcells(wildcards):
     sample = wildcards.sample
@@ -82,7 +111,7 @@ def get_sv_output(df, caller):
     pairs = generate_paired_samples(df)
     results = {
         'sniffles': collect("analysis/svs/sniffles/{sample}/{sample}.vcf", sample=df.sample_id.unique()), 
-        'nanomonsv': [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.result.simple_repeat.svtype.txt" for pair in pairs],
+        'nanomonsv': [f"analysis/svs/nanomonsv/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.nanomonsv.result.simple_repeat.svtype.passed.txt" for pair in pairs],
         'severus': [f"analysis/svs/severus/{pair['tumour']}.{pair['normal']}/somatic_SVs/severus_somatic.vcf" for pair in pairs],
         'savana': [f"analysis/svs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}.classified.somatic.vcf" for pair in pairs]
     }
@@ -100,5 +129,9 @@ def get_final_output():
         final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['germline']]
         final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['germline']]
     if run_mode in ['somatic', 'all']:
+        final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['somatic']]
         final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['somatic']]
     return final_results
+
+
+check_container_config()

@@ -1,4 +1,5 @@
 from pybedtools import BedTool
+
 simple_repeat_tb = BedTool(snakemake.input.simple_repeat)
 def get_svtype(fields):
     chr_1, chr_2 = fields['Chr_1'], fields['Chr_2']
@@ -21,7 +22,7 @@ def is_simple_repeat(fields, simple_repeat_tb, span=30):
         if indel_region[0].start >= region.start - span and indel_region[0].end <= region.end + span:
             return True
     return False
-    
+
 with open(snakemake.input.result) as f_in, open(snakemake.output.filt, 'w') as f_out, open(snakemake.output.passed, 'w') as f_passed:
     for line in f_in:
         line = line.strip()

@@ -25,8 +25,11 @@ set-threads:
   repair_MMtag: 6
   call_germline_snv_clair3: 12
   call_germline_snv_deepvariant: 12
-  call_germline_snv_deepvariant_s1_make_examples: 20
+  call_germline_snv_deepvariant_s1_make_examples: 12
+  call_germline_snv_deepvariant_s2_call_variants: 1
+  call_germline_snv_deepvariant_s3_postprocess_variants: 2
   margin_phasing: 12
+  whatshap_phasing: 12
   call_germline_snv_pepper: 12
   call_germline_sv_sniffles: 12
   haplotagging_whatshap: 8
@@ -80,6 +83,15 @@ set-resources:
   call_germline_snv_deepvariant_s1_make_examples:
     walltime: 12
     mem: 24
+  call_germline_snv_deepvariant_s2_call_variants:
+    walltime: 12
+    mem: 24
+  call_germline_snv_deepvariant_s3_postprocess_variants:
+    walltime: 12
+    mem: 24
+  whatshap_phasing:
+    walltime: 12
+    mem: 12
   margin_phasing:
     walltime: 12
     mem: 24

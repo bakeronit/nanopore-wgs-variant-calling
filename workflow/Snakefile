@@ -7,9 +7,6 @@ min_version('8.20.5')
 if not config:
     configfile: Path(workflow.basedir).parent / "config/config.yaml"
 
-#report: "report/workflow.rst"
-workdir: "work"
-
 localrules:
     all,
 
