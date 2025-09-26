@@ -16,18 +16,18 @@ rule call_somatic_snv_deepsomatic:
     threads: 24
     container: DP_somatic_sif
     resources:
-        mem=36,  # using 30gb will cause Cgroup out of memory error
-        walltime=80
+        mem=64,  # some samples need more memory
+        walltime=20
     shell:
         """
-        run_deepsomatic  \
+        run_deepsomatic \
         --model_type=ONT \
         --ref={input.genome} \
         --reads_normal={input.normal_bam} \
         --reads_tumor={input.tumor_bam} \
         --output_vcf={output} \
-        --sample_name_tumor="{wildcards.sample_t}" \
-        --sample_name_normal="{wildcards.sample_n}" \
+        --sample_name_tumor={wildcards.sample_t} \
+        --sample_name_normal={wildcards.sample_n} \
         --num_shards={threads} \
         --logging_dir={params.logdir}
         """

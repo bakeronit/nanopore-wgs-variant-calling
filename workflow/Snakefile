@@ -30,7 +30,6 @@ include: "rules/sv_calling/nanomonsv.smk"
 include: "rules/sv_calling/savana.smk"
 include: "rules/sv_calling/severus.smk"
 
-
 ##### target rules #####
 rule all:
     input:
