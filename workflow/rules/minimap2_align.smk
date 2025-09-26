@@ -1,7 +1,7 @@
 rule align_minimap2:
     input:
         ubam = "analysis/ubam/{sample}/{run}.trimmed_repaired.ubam" if config['params']['trim'] \
-            else "analysis/ubam/{sample}/{run}.ubam",
+            else basecalling_dir / "analysis/ubam/{sample}/{run}.ubam",
         genome = config['reference']['file']
     output:
         bam = temp("analysis/bam/{sample}/{run}.bam"),

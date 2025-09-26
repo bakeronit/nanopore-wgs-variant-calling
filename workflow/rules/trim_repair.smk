@@ -3,7 +3,7 @@
 
 rule trim_reads:
     input:
-        "analysis/ubam/{sample}/{run}.ubam"
+        basecalling_dir / "analysis/ubam/{sample}/{run}.ubam"
     output:
         temp("analysis/ubam/{sample}/{run}.trimmed.sorted.ubam")
     threads: 10 ## how many is needed exactly this need in a pipe.
@@ -26,7 +26,7 @@ rule trim_reads:
 
 rule sorted_original_ubam:
     input:
-        "analysis/ubam/{sample}/{run}.ubam"
+        basecalling_dir / "analysis/ubam/{sample}/{run}.ubam"
     output:
         temp("analysis/ubam/{sample}/{run}.sorted.ubam")
     threads: 12

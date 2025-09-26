@@ -16,6 +16,8 @@ def get_svtype(fields):
 
 def is_simple_repeat(fields, simple_repeat_tb, span=30):
     chr_1, pos_1, pos_2 = fields['Chr_1'], fields['Pos_1'], fields['Pos_2']
+    if int(pos_1) > int(pos_2):
+        pos_1, pos_2 = pos_2, pos_1
     indel_region = BedTool(f"{chr_1}\t{pos_1}\t{pos_2}", from_string=True)
     intersect_regions = indel_region.intersect(simple_repeat_tb)
     for region in intersect_regions:

@@ -4,22 +4,14 @@ To run deepvariant in steps, so the resources on HPC clusters can be managed and
 DEEPVARIANT_GPU_sif = config['deepvariant']['gpu']
 DEEPVARIANT_CPU_sif = config['deepvariant']['cpu']
 ## TODO: need to run deepvaraint and check pacbio specific parameters.
-workdir: "/mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow/test"
 #NSHARD = int(config['deepvariant']['make_examples_theads'])
 NSHARD=12
-
 
 def tfrecord_suffix(ncpu: int, json=False):
     suffix = [f".tfrecord-{i:05d}-of-{ncpu:05d}.gz" for i in range(ncpu)]
     if json:
         suffix = [f"{s}.example_info.json" for s in suffix]
     return suffix
-
-#SAMPLES = ['COLO829_BL']
-#rule all:
-#    input:
-#        #expand("analysis/snvs/deepvariant/{sample}/examples/make_examples{suffix}", sample=SAMPLES, suffix=tfrecord_suffix(NSHARD)),
-#        expand("analysis/snvs/deepvariant/{sample}/{sample}.visual_report.html", sample=SAMPLES)
 
 rule call_germline_snv_deepvariant_s1_make_examples:
     input:

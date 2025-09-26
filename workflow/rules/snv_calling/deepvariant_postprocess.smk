@@ -67,3 +67,17 @@ rule whatshap_phasing:
         {input.vcf} \
         {input.bam}
         """
+
+rule index_phased_vcf:
+    input:
+       rules.whatshap_phasing.output
+    output:
+        "analysis/snvs/deepvariant/{sample}/{sample}.passed.phased.vcf.gz.tbi"
+    threads: 1
+    resources:
+        mem = 1,
+        walltime = 1
+    shell:
+        """
+        bcftools index -t {input}
+        """

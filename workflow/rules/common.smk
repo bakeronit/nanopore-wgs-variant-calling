@@ -4,12 +4,16 @@ from pathlib import Path
 from snakemake.utils import validate
 
 container: "/mnt/backedup/home/jiaZ/working/containers/definitions/long_read_wgs_pipeline.sif"
+container: "library://jiazhang/workflows/long_read_wgs_pipeline:1.0"
 
 validate(config, schema=Path(workflow.basedir, "schema/config.schema.yaml"))
 
-samples_df = pd.read_csv(config['samples'])
-samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could be numbers only.
+samples = Path(config['samples'])
+if not samples.is_absolute():
+    samples = Path(os.environ["PWD"]) / samples
 
+samples_df = pd.read_csv(samples)
+samples_df['sample_id'] = samples_df['sample_id'].astype(str) #sample id could be numbers only.
 
 wildcard_constraints:
     sample="|".join(samples_df["sample_id"].unique()),
@@ -19,6 +23,8 @@ if config['run_mode'] in ['somatic', 'all']:
     wildcard_constraints:
         sample_t="|".join(samples_df[samples_df['type']=='tumour']['sample_id'].unique()),
         sample_n="|".join(samples_df[samples_df['type']=='normal']['sample_id'].unique())
+
+basecalling_dir = Path().cwd() if not config.get('basecalling_dir', None) else Path(config['basecalling_dir'])
 
 def check_container_config():
     if not config.get('pull_containers', False):
@@ -132,6 +138,5 @@ def get_final_output():
         final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['somatic']]
         final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['somatic']]
     return final_results
-
 
 check_container_config()

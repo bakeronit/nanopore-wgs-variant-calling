@@ -1,7 +1,6 @@
 results/**
 resources/**
 .snakemake/**
-test/**
 .DS_Store
 logs/**
 *.log
