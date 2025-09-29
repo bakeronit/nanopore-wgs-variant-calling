@@ -137,6 +137,7 @@ def get_final_output():
     if run_mode in ['somatic', 'all']:
         final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['somatic']]
         final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['somatic']]
+        final_results += "analysis/cnvs/savana/{sample_t}.{sample_n}/{sample_t}.{sample_n}_segmented_absolute_copy_number.tsv"
     return final_results
 
 check_container_config()

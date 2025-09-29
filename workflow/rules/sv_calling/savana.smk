@@ -102,7 +102,7 @@ rule call_somatic_cnv_savana_cna:
         "benchmarks/savana/{sample_t}.{sample_n}.cna.benchmark.txt"
     threads: 24
     resources:
-        mem = 400,
+        mem = 200,
         walltime = 48
     shell:
         """
@@ -110,7 +110,7 @@ rule call_somatic_cnv_savana_cna:
         --normal {input.normal_bam} \
         --ref {input.genome} \
         --sample {wildcards.sample_t}.{wildcards.sample_n} \
-        --phased_vcf {input.phased_vcf} \
+        --snp_vcf {input.phased_vcf} \
         --breakpoints {input.breakpoints} \
         --blacklist {input.blacklist} \
         --threads {threads} \
