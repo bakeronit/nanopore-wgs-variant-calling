@@ -35,6 +35,7 @@ set-threads:
   haplotagging_whatshap: 8
   index_haplotagged_bam: 8
   call_somatic_snv_deepsomatic: 12
+  call_somatic_snv_deepsomatic_by_chr: 12
   extract_somatic_snv_deepsomatic: 1
   call_somatic_snv_clairS: 12
   nanomonsv_parse: 1
@@ -111,6 +112,9 @@ set-resources:
     walltime: 12
     mem: 12
   extract_somatic_snv_deepsomatic:
+    walltime: 2
+    mem: 10
+  call_somatic_snv_deepsomatic_by_chr:
     walltime: 2
     mem: 10
   call_somatic_snv_clairS:
