@@ -4,7 +4,7 @@ from pathlib import Path
 from snakemake.utils import validate
 
 container: "/mnt/backedup/home/jiaZ/working/containers/definitions/long_read_wgs_pipeline.sif"
-container: "library://jiazhang/workflows/long_read_wgs_pipeline:1.0"
+#container: "library://jiazhang/workflows/long_read_wgs_pipeline:1.0"
 
 validate(config, schema=Path(workflow.basedir, "schema/config.schema.yaml"))
 

@@ -58,7 +58,7 @@ rule nanomonsv_filter_simple_repeat_svtype:
     script:
         "../../scripts/nanomonsv_postprocess.py"
         
-
+# need to use a different container as in my current container I used pip install, which lead to some issues with CPU instructions mismatch (Signals.SIGILL: 4).https://gith    ub.com/friend1ws/nanomonsv/issues/37
 rule call_somatic_sv_nanomonsv_get:
     input:
         multiext("analysis/svs/nanomonsv/{sample_t}/{sample_t}", '.bp_info.sorted.bed.gz','.deletion.sorted.bed.gz','.insertion.sorted.bed.gz', '.rearrangement.sorted.bedpe.gz'),
@@ -83,6 +83,7 @@ rule call_somatic_sv_nanomonsv_get:
         "logs/svs/nanomonsv/{sample_t}.{sample_n}.get.log"
     benchmark:
         "benchmarks/nanomonsv/{sample_t}.{sample_n}.get.benchmark.txt"
+    container: "/mnt/lustre/working/lab_nicw/jiaZ/imgs/nanomonsv/nanomonsv_v0.8.0.sif"
     threads: 20
     resources:
         mem = 48,

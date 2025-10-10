@@ -71,6 +71,9 @@ rule call_somatic_sv_savana_classify:
         --threads {threads} &> {log}
         """
 
+# call somatic CNV with savana cna subcommand
+# the dependency of phased vcf file is not needed since version 1.3.0
+# the output files names are also changed, need to keep an eye on updates.
 rule call_somatic_cnv_savana_cna:
     input:
         phased_vcf = get_phased_vcf,
@@ -82,17 +85,12 @@ rule call_somatic_cnv_savana_cna:
         genome=config['reference']['file'],
         blacklist=config['annotation']['blacklist'],
     output:
-        "analysis/cnvs/savana/{sample_t}.{sample_n}/10kbp_bin_ref_all_{sample_t}.{sample_n}withVCF.bed",
+        "analysis/cnvs/savana/{sample_t}.{sample_n}/10kbp_bin_ref_all_{sample_t}.{sample_n}_with_SV_breakpoints.bed",
         multiext("analysis/cnvs/savana/{sample_t}.{sample_n}/{sample_t}.{sample_n}", \
         "_allele_counts_hetSNPs.bed", \
         "_fitted_purity_ploidy.tsv", \
-        "_phased_het_snps.bed", \
         "_ranked_solutions.tsv", \
-        "_read_counts_filtered.tsv", \
         "_read_counts_mnorm_log2r_segmented.tsv", \
-        "_read_counts_mnorm_log2r_smoothened_sl10_t0.025.tsv", \
-        "_read_counts_mnorm_log2r.tsv", \
-        "_read_counts.tsv", \
         "_segmented_absolute_copy_number.tsv" )
     params:
         outdir="analysis/cnvs/savana/{sample_t}.{sample_n}",
@@ -102,15 +100,20 @@ rule call_somatic_cnv_savana_cna:
         "benchmarks/savana/{sample_t}.{sample_n}.cna.benchmark.txt"
     threads: 24
     resources:
-        mem = 400,
+        mem = 200,
         walltime = 48
     shell:
         """
-        savana cna --tumour {input.tumour_bam} \
+        if [ "$(ls -A {params.outdir})" ]; then   
+            rm -f {params.outdir}/*
+        fi
+
+        savana cna \
+        --tumour {input.tumour_bam} \
         --normal {input.normal_bam} \
         --ref {input.genome} \
         --sample {wildcards.sample_t}.{wildcards.sample_n} \
-        --phased_vcf {input.phased_vcf} \
+        --snp_vcf {input.phased_vcf} \
         --breakpoints {input.breakpoints} \
         --blacklist {input.blacklist} \
         --threads {threads} \
