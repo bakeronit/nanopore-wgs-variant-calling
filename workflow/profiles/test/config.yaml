@@ -1,7 +1,6 @@
 executor: cluster-generic
-cluster-generic-submit-cmd: "/mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow/workflow/profiles/test/pbs-submit.py"
-jobscript: "/mnt/backedup/home/jiaZ/working/github/nanopore_paired_tumour_workflow/workflow/profiles/test/pbs-jobscript.sh"
-storage-http-max-requests-per-second: 10
+cluster-generic-submit-cmd: "pbs-submit.py"
+jobscript: "pbs-jobscript.sh"
 cluster-generic-cancel-cmd: "qdel"
 jobs: 500
 use-envmodules: True

@@ -14,7 +14,7 @@ rule call_somatic_sv_delly:  # paired-samples analysis
         samples_tsv = "analysis/svs/delly/{sample_t}.{sample_n}/{sample_t}.{sample_n}.tsv",
         filtered_vcf = "analysis/svs/delly/{sample_t}.{sample_n}/{sample_t}.{sample_n}.vcf"
     params:
-        excl = f"-x {config['delly']['bed']}" if config['delly']['bed'] != None else ""
+        excl = f"-x {config['annotation']['blacklist']}" if config['annotation']['blacklist'] != None else ""
     log:
         "logs/svs/delly/{sample_t}.{sample_n}.log"
     benchmark:
