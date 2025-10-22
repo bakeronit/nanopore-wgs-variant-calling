@@ -5,3 +5,5 @@ resources/**
 logs/**
 *.log
 nohup.out
+config/*
+!config/config.yaml.template

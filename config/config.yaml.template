@@ -1,0 +1,58 @@
+samples: /path/to/samples.csv
+run_mode: "all"
+pull_containers: false # if running on qimrb cluster, no need to pull containers
+basecalling_dir: /path/to/work_dir/to/basecalling_pipeline
+
+snv_calling:
+    phased_snv_from: 'deepvariant'
+    germline: ['clair3','deepvariant']
+    somatic: ['clairs','deepsomatic']
+sv_calling:
+    germline: ['sniffles']
+    somatic: ['savana','severus','nanomonsv']
+
+reference:
+    build: GRCh38
+    file: /path/to/reference.fasta
+
+annotation:
+    blacklist: /path/to/data/delly/hg38-blacklist.v2.bed.gz
+    pon: /path/to/data/severus/PoN_1000G_hg38.tsv.gz
+    vntr: /path/to/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed
+    control_panel_path: /path/to/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
+    simple_repeat: /path/to/data/nanomonsv/simpleRepeat.bed.gz
+
+params:
+    trim: true
+    read_qs: 10
+    headcrop: 40
+    tailcrop: 20
+    minlen: 100
+    minsvlen: 50
+
+## Tools configuration
+pepper:
+  sif: /path/to/pepper.sif
+  params: /path/to/data/ont_models/margin_phase
+  
+deepvariant:
+  run_as_steps: true
+  gpu: /path/to/deepvariant.gpu.sif
+  cpu: /path/to/deepvariant.cpu.sif
+
+deepsomatic: 
+  gpu: /path/to/deepsomatic.gpu.sif
+  cpu: /path/to/deepsomatic.cpu.sif
+
+clair3:
+  sif: /path/to/clair3.sif
+  model: /path/to/data/ont_models/clair3_models/r1041_e82_400bps_sup_v520
+
+clairS:
+  sif: /path/to/clairS.sif
+  platform: ont_r10_dorado_sup_5khz
+  indel_calling: true
+  subclone: true  # this enable subclone variant detection
+
+nanomonsv:
+  misc_scripts_path: /path/to/nanomonsv_misc_scripts
