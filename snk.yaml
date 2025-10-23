@@ -1,0 +1,19 @@
+additional_snakemake_args: []
+logo: QIMRB
+tagline: "Variant calling for nanpore sequencing data"
+commands:
+- run
+- script
+- env
+- profile
+- info
+- config
+conda: true
+configfile: null
+font: small
+min_snk_cli_version: null
+resources: []
+skip_missing: false
+snakefile: null
+symlink_resources: false
+version: 0.1.0

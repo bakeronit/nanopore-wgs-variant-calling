@@ -51,10 +51,11 @@ rule whatshap_phasing:
     input:
         reference = config['reference']['file'],
         bam = "analysis/bam/{sample}.bam",
-        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz"
+        vcf = "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz",
+        tbi = "analysis/snvs/deepvariant/{sample}/{sample}.passed.vcf.gz.tbi"
     output:
         "analysis/snvs/deepvariant/{sample}/{sample}.passed.phased.vcf.gz"
-    threads: 12
+    threads: 2
     resources:
         mem = 24,
         walltime = 24
