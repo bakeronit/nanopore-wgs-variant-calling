@@ -23,6 +23,16 @@ def cal_average_cpu(cpu_time: str, walltime_used: str) -> float:
     walltime_used = parse_hms(walltime_used)
     return round(cpu_time / walltime_used, 2)
 
+def get_wildcards(job_id, job_name, rundir):
+    job_id = job_id.split(".")[0]
+    pbs_e = list(rundir.glob(f"snakejob.{job_name}.*.sh.e{job_id}"))
+    print(job_id, job_name, rundir)
+    with open(pbs_e[0], 'rt') as f:
+        for line in f:
+            if "wildcards:" in line:
+                return line.strip().split(":")[1].strip()
+
+
 def parse_job_info(job_info: dict) -> dict:
     job_name = job_name_regex.search(job_info["Job_Name"]).group(1)
     exec_host = job_info['exec_host'].split("/")[0]
@@ -46,58 +56,7 @@ def get_jobs_info(job_ids: list  = None) -> list[dict]:
         job_id = f"{job_id}.{PBS_SERVER}"
         job_data = parse_job_info(qstat_json["Jobs"][job_id])
         job_data["job_id"] = job_id
-        jobs_data.append(job_data)
-    return jobs_data
-from pathlib import Path
-import json
-import subprocess
-import re 
-from datetime import timedelta
-from typing import Union
-
-#get "whatshap_phasing" from "snakejob.whatshap_phasing.999.sh"
-job_name_regex = re.compile(r"snakejob\.(\w+)\.\d+\.sh")
-QSTAT_COMMAND = "qstat -fx -F json"
-PBS_SERVER = "hpcpbs02"
-
-
-def format_mem(mem: str) -> float:
-    mem = int(mem.replace("kb", ""))
-    return round(mem / 1024 / 1024, 2)
-
-def parse_hms(hms: str) -> timedelta:
-    h, m, s = map(int, hms.split(":"))
-    return timedelta(hours=h, minutes=m, seconds=s)
-
-def cal_average_cpu(cpu_time: str, walltime_used: str) -> float:
-    cpu_time = parse_hms(cpu_time)
-    walltime_used = parse_hms(walltime_used)
-    return round(cpu_time / walltime_used, 2)
-
-def parse_job_info(job_info: dict) -> dict:
-    job_name = job_name_regex.search(job_info["Job_Name"]).group(1)
-    exec_host = job_info['exec_host'].split("/")[0]
-    return {
-        "job_name": job_name,
-        "exec_host": exec_host,
-        "cpu_request": int(job_info['Resource_List']['ncpus']), 
-        "cpu_max": job_info['resources_used']['cpupercent'] / 100,
-        "cpu_average": cal_average_cpu(job_info['resources_used']['cput'], job_info['resources_used']['walltime']),
-        "mem_request": int(job_info['Resource_List']['mem'].replace("gb", "")),
-        "mem_used": format_mem(job_info['resources_used']['mem']),
-        "walltime_request": job_info['Resource_List']['walltime'],
-        "walltime_used": job_info['resources_used']['walltime']
-    }
-
-def get_jobs_info(job_ids: list  = None) -> list[dict]:
-    jobs_data = []
-    qstat_command = QSTAT_COMMAND
-    qstat_result = subprocess.run(f"{qstat_command} {' '.join(job_ids)}", shell=True, check=True, text=True, encoding="utf-8", capture_output=True)
-    qstat_json = json.loads(qstat_result.stdout)
-    for job_id in job_ids:
-        job_id = f"{job_id}.{PBS_SERVER}"
-        job_data = parse_job_info(qstat_json["Jobs"][job_id])
-        job_data["job_id"] = job_id
+        job_data["wildcards"] = get_wildcards(job_id, job_data["job_name"], rundir)
         jobs_data.append(job_data)
     return jobs_data
 
@@ -110,6 +69,7 @@ def print_table_simple(jobs_data: list[dict]):
     # Define column headers and their widths
     headers = {
         "job_id": ("Job ID", 25),
+        "wildcards": ("Wildcards", 25),
         "job_name": ("Job Name", 20),
         "exec_host": ("Host", 15),
         "cpu_request": ("CPU Req", 8),
@@ -152,7 +112,7 @@ def print_table_tabulate(jobs_data: list[dict]):
         
         # Define headers in display order
         headers = [
-            "job_id", "job_name", "exec_host", 
+            "job_id", "job_name", "wildcards","exec_host", 
             "cpu_request", "cpu_max", "cpu_average",
             "mem_request", "mem_used", 
             "walltime_request", "walltime_used"
@@ -166,7 +126,7 @@ def print_table_tabulate(jobs_data: list[dict]):
         
         # Define pretty headers
         pretty_headers = [
-            "Job ID", "Job Name", "Host", 
+            "Job ID", "Job Name", "Wildcards", "Host", 
             "CPU Req", "CPU Max", "CPU Avg",
             "Mem Req(GB)", "Mem Used(GB)", 
             "Time Req", "Time Used"
@@ -211,6 +171,8 @@ def print_summary_stats(jobs_data: list[dict]):
     for name, jobs in sorted(job_groups.items()):
         print(f"  {name}: {len(jobs)} jobs")
 
+
+
 if __name__ == "__main__":
     from pprint import pprint
     import sys
@@ -228,8 +190,8 @@ if __name__ == "__main__":
     
     print(f"Found {len(job_ids)} jobs in {rundir}")
     jobs_data = get_jobs_info(job_ids)
-    
+    jobs_data.sort(key=lambda x: x['job_name'])
     
     print_table_tabulate(jobs_data)
     
-    print_summary_stats(jobs_data)
+    #print_summary_stats(jobs_data)

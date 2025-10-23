@@ -83,6 +83,11 @@ def get_qc_output(df):
         collect("analysis/qc/bam/{sample}.mosdepth.summary.txt", sample=df['sample_id'].unique()) + \
         collect("analysis/qc/bam/{sample}.bamcov.txt", sample=df['sample_id'].unique())
 
+def get_mod(df):
+    return collect("analysis/mod/{sample}_1.bed.gz", sample=df['sample_id'].unique()) + \
+    collect("analysis/mod/{sample}_2.bed.gz", sample=df['sample_id'].unique()) + \
+    collect("analysis/mod/{sample}.mod_summary.txt", sample=df['sample_id'].unique())
+
 def generate_paired_samples(df):
     """
     Generate test-control pairs for each donor, there might be multiple test samples with one control sample.
@@ -125,11 +130,16 @@ def get_sv_output(df, caller):
         raise ValueError(f"Error: SV caller {caller} is not supported.")
     return results[caller.lower()]
 
+def get_cnv_output(df):
+    pairs = generate_paired_samples(df)
+    return [f"analysis/cnvs/savana/{pair['tumour']}.{pair['normal']}/{pair['tumour']}.{pair['normal']}_segmented_absolute_copy_number.tsv" for pair in pairs]
+
 def get_final_output():
     run_mode = config['run_mode']
     final_results = [
         get_alignment_output(samples_df),
-        get_qc_output(samples_df)
+        get_qc_output(samples_df),
+        get_mod(samples_df)
     ]
     if run_mode in ['germline', 'all']:
         final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['germline']]
@@ -137,6 +147,7 @@ def get_final_output():
     if run_mode in ['somatic', 'all']:
         final_results += [get_snv_indel_output(samples_df, caller) for caller in config['snv_calling']['somatic']]
         final_results += [get_sv_output(samples_df, caller) for caller in config['sv_calling']['somatic']]
+        final_results += [get_cnv_output(samples_df)]
     return final_results
 
 check_container_config()

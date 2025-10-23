@@ -93,7 +93,7 @@ rule call_somatic_cnv_savana_cna:
         "_read_counts_mnorm_log2r_segmented.tsv", \
         "_segmented_absolute_copy_number.tsv" )
     params:
-        outdir="analysis/cnvs/savana/{sample_t}.{sample_n}",
+        outdir="analysis/cnvs/savana/{sample_t}.{sample_n}"
     log:
         "logs/savana/{sample_t}.{sample_n}.cna.log"
     benchmark:
@@ -105,7 +105,7 @@ rule call_somatic_cnv_savana_cna:
     shell:
         """
         if [ "$(ls -A {params.outdir})" ]; then   
-            rm -f {params.outdir}/*
+            rm -rf {params.outdir}/*
         fi
 
         savana cna \
@@ -116,7 +116,7 @@ rule call_somatic_cnv_savana_cna:
         --snp_vcf {input.phased_vcf} \
         --breakpoints {input.breakpoints} \
         --blacklist {input.blacklist} \
-        --threads {threads} \
+        --cna_threads {threads} \
         --outdir {params.outdir} &> {log}
         """
         

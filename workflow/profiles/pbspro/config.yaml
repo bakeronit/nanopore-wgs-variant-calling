@@ -12,3 +12,136 @@ retries: 0
 default-resources:
   walltime: 2
   mem: 10
+
+set-threads:
+  qc_bam_stats: 4
+  qc_bam_cov: 1
+  align_minimap2: 24
+  merge_bam: 10
+  trim_reads: 10
+  sorted_original_ubam: 12
+  repair_MMtag: 6
+  call_germline_snv_clair3: 24
+  call_germline_snv_deepvariant: 30
+  call_germline_snv_deepvariant_s1_make_examples: 12
+  call_germline_snv_deepvariant_s2_call_variants: 1
+  call_germline_snv_deepvariant_s3_postprocess_variants: 12
+  call_germline_snv_deepvariant_vcf_stats_report: 1
+  filter_passed_variants: 1
+  whatshap_phasing: 12
+  index_phased_vcf: 1
+  haplotagging_whatshap: 8
+  index_haplotagged_bam: 8
+  call_somatic_snv_clairS: 24
+  call_somatic_snv_deepsomatic_by_chr: 24
+  merge_vcfs_by_chr: 1
+  call_germline_sv_sniffles: 24
+  nanomonsv_parse: 1
+  call_somatic_sv_nanomonsv_get: 20
+  nanomonsv_filter_simple_repeat_svtype: 1
+  nanomonsv_postprocess_sbnd: 1
+  call_somatic_sv_savana_run: 24
+  call_somatic_sv_savana_classify: 12
+  call_somatic_cnv_savana_cna: 24
+  call_somatic_sv_severus: 20
+  bamTobedmethyl: 12
+  modsummary: 8
+  bamtohapmod: 8
+
+set-resources:
+  qc_bam_stats:
+    walltime: 12
+    mem: 10
+  qc_bam_cov:
+    walltime: 12
+    mem: 32
+  align_minimap2:
+    walltime: 24
+    mem: 48
+  merge_bam:
+    walltime: 8
+    mem: 20
+  trim_reads:
+    walltime: 12
+    mem: 24
+  sorted_original_ubam:
+    walltime: 6
+    mem: 24
+  repair_MMtag:
+    walltime: 12
+    mem: 20
+  call_germline_snv_clair3:
+    walltime: 48
+    mem: 48
+  call_germline_snv_deepvariant:
+    walltime: 48
+    mem: 64
+  call_germline_snv_deepvariant_s1_make_examples:
+    walltime: 24
+    mem: 20
+  call_germline_snv_deepvariant_s2_call_variants:
+    walltime: 24
+    mem: 20
+  call_germline_snv_deepvariant_s3_postprocess_variants:
+    walltime: 30
+    mem: 20
+  call_germline_snv_deepvariant_vcf_stats_report:
+    walltime: 10
+    mem: 10
+  filter_passed_variants:
+    walltime: 2
+    mem: 6
+  whatshap_phasing:
+    walltime: 24
+    mem: 24
+  index_phased_vcf:
+    walltime: 1
+    mem: 1
+  haplotagging_whatshap:
+    walltime: 48
+    mem: 48
+  index_haplotagged_bam:
+    walltime: 2
+    mem: 10
+  call_somatic_snv_clairS:
+    walltime: 48
+    mem: 48
+  call_somatic_snv_deepsomatic_by_chr:
+    walltime: 12
+    mem: 32
+  call_germline_sv_sniffles:
+    walltime: 12
+    mem: 48
+  nanomonsv_parse:
+    walltime: 48
+    mem: 24
+  call_somatic_sv_nanomonsv_get:
+    walltime: 48
+    mem: 48
+  nanomonsv_filter_simple_repeat_svtype:
+    walltime: 1
+    mem: 2
+  nanomonsv_postprocess_sbnd:
+    walltime: 1
+    mem: 2
+  call_somatic_sv_savana_run:
+    walltime: 24
+    mem: 600
+  call_somatic_sv_savana_classify:
+    walltime: 48
+    mem: 20
+  call_somatic_cnv_savana_cna:
+    walltime: 48
+    mem: 200
+  call_somatic_sv_severus:
+    walltime: 48
+    mem: 64
+  bamTobedmethyl:
+    walltime: 12
+    mem: 10
+  modsummary:
+    walltime: 12
+    mem: 10
+  bamtohapmod:
+    walltime: 12
+    mem: 10

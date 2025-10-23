@@ -1,10 +1,39 @@
 # Nanopore whole-genome sequencing variant calling
 
-[![Snakemake](https://img.shields.io/badge/snakemake-≥8.20.5-brightgreen.svg)](https://snakemake.github.io) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3100/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Sylabs SIF](https://img.shields.io/badge/Container-Sylabs%20SIF-5E72E4?style=flat-square)](https://cloud.sylabs.io/library/jiazhang/workflows/long_read_wgs_pipeline)
+[![Snakemake](https://img.shields.io/badge/snakemake-≥8.20.1-brightgreen.svg)](https://snakemake.github.io) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3100/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Sylabs SIF](https://img.shields.io/badge/Container-Sylabs%20SIF-5E72E4?style=flat-square)](https://cloud.sylabs.io/library/jiazhang/workflows/long_read_wgs_pipeline)
 
 A Snakemake workflow for germline and somatic variant calling from Oxford Nanopore long-read whole-genome sequencing data of paired tumour/normal samples.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation and Setup](#installation-and-setup)
+  - [Requirements](#requirements)
+  - [Container Setup](#container-setup)
+  - [Download Required Models and Annotations](#download-required-models-and-annotations)
+    - [Reference Genome](#reference-genome)
+    - [Tool-Specific Models](#tool-specific-models)
+    - [Tool-Specific Annotation Files](#tool-specific-annotation-files)
+- [Configuration](#configuration)
+  - [Sample Sheets](#sample-sheets)
+  - [Workflow Configuration](#workflow-configuration)
+- [Usage](#usage)
+  - [Running the Complete Workflow](#running-the-complete-workflow)
+  - [Monitoring Progress](#monitoring-progress-optional)
+- [Output Structure](#output-structure)
+  - [Key Output Files](#key-output-files)
+- [Workflow Components](#workflow-components)
+  - [Supported Tools](#supported-tools)
+  - [Analysis Modes](#analysis-modes)
+- [Resource Requirements](#resource-requirements)
+  - [Compute Resources](#compute-resources)
+  - [Optimising Workflow Resources](#keep-optimising-the-workflow-resources-requirements)
+- [Citation](#citation)
+- [License](#license)
+
 ## Overview
+
+![Workflow rulegraph](images/rulegraph.png?width=600px)
 
 This workflow processes Oxford Nanopore long-read WGS sequencing data to identify:
 - **Germline variants**: SNVs and SVs present in normal tissue
@@ -16,8 +45,9 @@ This workflow processes Oxford Nanopore long-read WGS sequencing data to identif
 
 ### Requirements
 - **Snakemake ≥8.20.1**
-- **Singularity/Apptainer** (for containerized tools)
+- **Singularity/Apptainer** (for containerized tools on HPC)
 - **Python 3.11+**
+- **Pandas**
 
 ### Container Setup
 
@@ -38,7 +68,6 @@ apptainer build long_read_wgs_pipeline.sif long_read_wgs.def
 #### Reference Genome
 
 A constant reference genome and indexed genome is required for all samples.
-
 ```bash
 # Download and index GRCh38 reference
 #https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
@@ -54,9 +83,9 @@ samtools faidx reference.fasta
 #### Tool-Specific Models
 
 - Nanopore rerio provides up-to-date pre-trained models for [Clair3](https://github.com/nanoporetech/rerio/tree/master/clair3_models).
-- [CliarS](https://github.com/HKU-BAL/ClairS) `--platform` parameter changes with ONT models, need to keep it up-to-date. 
+- [ClairS](https://github.com/HKU-BAL/ClairS) `--platform` parameter changes with ONT models, need to keep it up-to-date. 
 
-This four tools are not included in the pipeline container, but each tool has a containerized version available:
+These four tools are not included in the pipeline container, but each tool has a containerized version available:
 
  - [Clair3](https://hub.docker.com/r/hkubal/clair3/tags)
  - [ClairS](https://hub.docker.com/r/hkubal/clairs/tags)
@@ -73,78 +102,102 @@ This four tools are not included in the pipeline container, but each tool has a 
 
 **Severus VNTRs**
 
- - Variable number tandem repeats: [VNTRs](https://github.com/KolmogorovLab/Severus/tree/main/vntrs) annotations for common references, customed annotations can be created using [findTandemRepeats](https://github.com/PacificBiosciences/pbsv/blob/master/annotations/findTandemRepeats)
+ - Variable number tandem repeats: [VNTRs](https://github.com/KolmogorovLab/Severus/tree/main/vntrs) annotations for common references, custom annotations can be created using [findTandemRepeats](https://github.com/PacificBiosciences/pbsv/blob/master/annotations/findTandemRepeats)
  - [PON](https://github.com/KolmogorovLab/Severus/tree/main/pon), used for **tumour only** cases. 
 
+ **Blacklists**
+ The ENCODE Blacklist, this is used in Delly and SAVANA for excluding problematic regions of the reference genome. 
+ - [Blacklists](https://github.com/Boyle-Lab/Blacklist/tree/master/lists)
 
 ## Configuration
 
 ### Sample Sheets
 
 Create `config/samples.csv` with your sample information:
-
 ```csv
 sample_id,flowcell_id,flowcell_version,donor_id,type
 sample_t,PAQ23729,R10,PATIENT01,tumour
 sample_n,PAQ24563,R10,PATIENT01,normal
 ```
 
-> for QIMR Promethion sequencing, this sample files can be generated as the [nanopore basecalling pipeline](https://github.com/bakeronit/nanopore_dorado_basecalling), and manually add the type column.
+> For QIMR Promethion sequencing, this sample file can be generated as in [nanopore basecalling pipeline](https://github.com/bakeronit/nanopore_dorado_basecalling), and manually add the type column indicating which one is the test (tumour) and which one is the control (normal).
 
 **Required columns:**
 - `sample_id`: Unique identifier for each sample
 - `flowcell_id`: Flowcell barcode (e.g., PAQ23729)
 - `flowcell_version`: Flowcell chemistry (R9/R10, best supporting R10)
 - `donor_id`: Patient/donor identifier (must match between tumour/normal pairs)
-- `type`: Sample type (`normal` or `tumour`, if running in germline mode, then samples are processed as simple sample, no somatic calling)
+- `type`: Sample type (`normal` or `tumour`; if running in germline mode, samples are processed as single samples with no somatic calling)
 
 ### Workflow Configuration
 
 Edit `config/config.yaml`:
-
 ```yaml
 # Sample and analysis configuration
 samples: /path/to/samples.csv
-run_mode: "all"  # Options: "germline", "somatic", "all"
-pull_containers: false  # Set true if containers need pulling, better not do this on HPC
+run_mode: "all"
+pull_containers: false # if running on qimrb cluster, no need to pull containers
+basecalling_dir: /path/to/work_dir/to/basecalling_pipeline
 
-# Reference genome
-reference:
-  build: GRCh38
-  file: /path/to/reference.fasta
-
-# Variant calling tools to run
 snv_calling:
-  phased_snv_from: 'deepvariant'
-  germline: ['deepvariant']
-  somatic: ['clairs','deepsomatic']
-
+    phased_snv_from: 'deepvariant'
+    germline: ['clair3','deepvariant']
+    somatic: ['clairs','deepsomatic']
 sv_calling:
-  germline: ['sniffles']
-  somatic: ['savana','severus','nanomonsv']
+    germline: ['sniffles']
+    somatic: ['savana','severus','nanomonsv']
 
-# Container paths (update with your paths)
-clair3:
-  sif: /path/to/clair3_v1.1.2.sif
-  model: /path/to/clair3_models/r1041_e82_400bps_sup_v520
+reference:
+    build: GRCh38
+    file: /path/to/reference.fasta
 
-deepvariant:
-  cpu: /path/to/deepvariant_1.9.0.sif
-  gpu: /path/to/deepvariant_v1.9.0-gpu.sif
-
-# Additional annotations
+# Tool-specific annotations
 annotation:
-  blacklist: /path/to/hg38-blacklist.v2.bed.gz
-  pon: /path/to/PoN_1000G_hg38.tsv.gz
-  vntr: /path/to/human_GRCh38_no_alt_analysis_set.trf.bed
-  control_panel_path: /path/to/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
-  simple_repeat: /path/to/simpleRepeat.bed.gz
+    blacklist: /path/to/data/delly/hg38-blacklist.v2.bed.gz
+    pon: /path/to/data/severus/PoN_1000G_hg38.tsv.gz
+    vntr: /path/to/data/severus/human_GRCh38_no_alt_analysis_set.trf.bed
+    control_panel_path: /path/to/data/nanomonsv/hprc_year1_data_freeze_nanopore_minimap2_2_24_merge_control
+    simple_repeat: /path/to/data/nanomonsv/simpleRepeat.bed.gz
+
+params:
+    trim: true
+    read_qs: 10
+    headcrop: 40
+    tailcrop: 20
+    minlen: 100
+    minsvlen: 50
+
+## Tools configuration
+pepper:
+  sif: /path/to/pepper.sif
+  params: /path/to/data/ont_models/margin_phase
+  
+deepvariant:
+  run_as_steps: true
+  gpu: /path/to/deepvariant.gpu.sif
+  cpu: /path/to/deepvariant.cpu.sif
+
+deepsomatic: 
+  gpu: /path/to/deepsomatic.gpu.sif
+  cpu: /path/to/deepsomatic.cpu.sif
+
+clair3:
+  sif: /path/to/clair3.sif
+  model: /path/to/data/ont_models/clair3_models/r1041_e82_400bps_sup_v520
+
+clairS:
+  sif: /path/to/clairS.sif
+  platform: ont_r10_dorado_sup_5khz
+  indel_calling: true
+  subclone: true  # this enable subclone variant detection
+
+nanomonsv:
+  misc_scripts_path: /path/to/nanomonsv_misc_scripts
 ```
 
 ## Usage
 
 ### Running the Complete Workflow
-
 ```bash
 # Clone the repository
 git clone https://github.com/bakeronit/nanopore_paired_tumour_workflow.git
@@ -162,7 +215,6 @@ nohup snakemake --configfile config/config.yaml --directory /path/to/project/out
 ```
 
 ### Monitoring Progress (Optional)
-
 ```bash
 # Check workflow status
 snakemake --summary --directory /path/to/project/output --configfile config/config.yaml
@@ -172,7 +224,6 @@ snakemake --report report.html --directory /path/to/project/output --configfile 
 ```
 
 ## Output Structure
-
 ```bash
 analysis/
 ├── bam/
@@ -278,9 +329,9 @@ analysis/
 
 ### Key Output Files
 
-- **Alignments**: `analysis/bam/{sample}.bam`  # sorted genome alignment
+- **Alignments**: `analysis/bam/{sample}.bam` - sorted genome alignment
 - **Germline SNVs**: `analysis/snvs/deepvariant/{sample}/{sample}.passed.phased.vcf.gz`
-- **Somatic SNVs**: `analysis/snvs/deepsomatic|clairS/{sample_tumour}.{sample_normal}/output.vcf.gz`  # Need to have more filters
+- **Somatic SNVs**: `analysis/snvs/deepsomatic|clairS/{sample_tumour}.{sample_normal}/output.vcf.gz` - needs additional filters
 - **Structural Variants**: `analysis/svs/{caller}/{sample}.vcf.gz`
 - **QC Reports**: `analysis/qc/` or `analysis/qc/multiqc_report.html`
 - **Methylation**: `analysis/mod/{sample}.bed.gz`
@@ -294,7 +345,7 @@ analysis/
 | **Trimming** | chopper | Quality and adapter trimming |
 | **Alignment** | minimap2 | Map reads to reference |
 | **QC** | mosdepth, samtools/coverage | Coverage and quality metrics |
-| **Germline SNVs** | deepvariant, whatshap | Call germline variants, and phasing |
+| **Germline SNVs** | deepvariant, whatshap | Call germline variants and phasing |
 | **Somatic SNVs** | clairS, deepsomatic | Call somatic mutations |
 | **Germline SVs** | sniffles | Call structural variants |
 | **Somatic SVs** | nanomonsv, savana, severus | Call somatic SVs |
@@ -303,7 +354,7 @@ analysis/
 | **Merged SVs*** | SSVanalyser, Jasmine | Merge structural variants |
 | **Report*** | multiqc | Generate report |
 
-**not yet implemented*
+*not yet implemented
 
 ### Analysis Modes
 
@@ -315,8 +366,7 @@ analysis/
 
 ### Compute Resources
 
-In the `workflow/profiles/config.yaml`, you can change the resources requirements for each rule.
-
+In the `workflow/profiles/config.yaml`, you can change the resource requirements for each rule.
 ```yaml
 set-threads:
   bc_summary: 1
@@ -327,19 +377,23 @@ set-threads:
   ...
 ```
 
-### Keep optimising the workflow resources requirements
-Although snakemake can do benchmarking of the workflow, the memory tracking is not the same as qstat. To get better estiamte, at the end of the workflow, you could run `python workflow/scripts/qstat_jobs.py work/` to get a better idea of whether you are requsting too much or little memory, CPUs, etc. So you can optimise your workflow resources requirements.
+### Keep Optimising the Workflow Resources Requirements
 
-**An example of the `qstat_jobs.py` output indicating that I requsted too much memory and too many CPUs)**
+Although Snakemake can do benchmarking of resources used in each jobs in the workflow, the memory tracking is not the same as qstat. At the end of the workflow, you could run `python workflow/scripts/qstat_jobs.py work/` to get a better idea of whether you are requesting too much or too little memory, CPUs, etc. This allows you to optimise your workflow resource requirements.
 
+**An example of the `qstat_jobs.py` output suggests that I requested too much memory and too many CPUs:**
 ```bash
-+-------------------+-------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
-| Job ID            | Job Name          | Host       |   CPU Req |   CPU Max |   CPU Avg |   Mem Req(GB) |   Mem Used(GB) | Time Req   | Time Used   |
-+===================+===================+============+===========+===========+===========+===============+================+============+=============+
-| 30952074.hpcpbs02 | coral_reconstruct | hpcnode062 |        16 |      1.22 |      0.81 |            52 |          18.09 | 48:00:00   | 01:30:43    |
-+-------------------+-------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
-| 30953787.hpcpbs02 | coral_reconstruct | hpcnode068 |        16 |      0.99 |      0.96 |            52 |          12.37 | 48:00:00   | 00:42:05    |
-+-------------------+-------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
++-------------------+----------------+---------------------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
+| Job ID            | Job Name       | Wildcards                       | Host       |   CPU Req |   CPU Max |   CPU Avg |   Mem Req(GB) |   Mem Used(GB) | Time Req   | Time Used   |
++===================+================+=================================+============+===========+===========+===========+===============+================+============+=============+
+| 30966588.hpcpbs02 | align_minimap2 | sample=COLO829_50, run=PAQ22155 | hpcnode068 |        24 |     13.21 |      0.24 |            20 |          18.85 | 02:00:00   | 00:18:23    |
++-------------------+----------------+---------------------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
+| 30966589.hpcpbs02 | align_minimap2 | sample=COLO829_50, run=PAQ45153 | hpcnode073 |        24 |      3.75 |      0.26 |            20 |          19.59 | 02:00:00   | 00:18:24    |
++-------------------+----------------+---------------------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
+| 30966590.hpcpbs02 | align_minimap2 | sample=COLO829_BL, run=PAQ23729 | hpcnode073 |        24 |      3.45 |      0.24 |            20 |          19.04 | 02:00:00   | 00:18:23    |
++-------------------+----------------+---------------------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
+| 30973416.hpcpbs02 | bamtohapmod    | sample=COLO829_BL               | hpcnode068 |         8 |      1.84 |      0.16 |            10 |           0.38 | 12:00:00   | 00:18:21    |
++-------------------+----------------+---------------------------------+------------+-----------+-----------+-----------+---------------+----------------+------------+-------------+
 ```
 
 ## Citation

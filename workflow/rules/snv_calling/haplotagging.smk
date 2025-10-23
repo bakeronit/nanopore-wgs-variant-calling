@@ -4,6 +4,7 @@ rule haplotagging_whatshap:
     input:
         genome = config['reference']['file'],
         vcf = get_phased_vcf,
+        tbi = lambda wildcards: get_phased_vcf(wildcards) + ".tbi",
         bam = "analysis/bam/{sample}.bam"
     output:
         bam = "analysis/bam/{sample}.haplotagged.bam"

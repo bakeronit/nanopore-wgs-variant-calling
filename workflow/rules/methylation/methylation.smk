@@ -1,21 +1,21 @@
 rule bamTobedmethyl:
     input:
-        bam = "analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai = "analysis/bam/{flowcell}/{mode}/{sample}.bam.bai",
+        bam = "analysis/bam/{sample}.bam",
+        bai = "analysis/bam/{sample}.bam.bai",
         genome = config['reference']['file'],
     output:
-        gz="analysis/mod/{flowcell}/{mode}/{sample}.bed.gz",
-        tbi="analysis/mod/{flowcell}/{mode}/{sample}.bed.gz.tbi"
+        gz="analysis/mod/{sample}.bed.gz",
+        tbi="analysis/mod/{sample}.bed.gz.tbi"
     params:
-        bed = "analysis/mod/{flowcell}/{mode}/{sample}.bed"
+        bed = "analysis/mod/{sample}.bed"
     threads: 12
     resources:
         mem = 10,
         walltime = 12
     log:
-        "logs/modkit/{flowcell}.{mode}.{sample}.pileup.log"
+        "logs/modkit/{sample}.pileup.log"
     benchmark:
-        "benchmarks/modkit/{flowcell}.{mode}.{sample}.benchmark.txt"
+        "benchmarks/modkit/{sample}.benchmark.txt"
     shell:
         """
         modkit pileup {input.bam} {params.bed} --ref {input.genome} \
@@ -27,42 +27,42 @@ rule bamTobedmethyl:
 
 rule modsummary:
     input:
-        bam = "analysis/bam/{flowcell}/{mode}/{sample}.bam",
-        bai = "analysis/bam/{flowcell}/{mode}/{sample}.bam.bai"
+        bam = "analysis/bam/{sample}.bam",
+        bai = "analysis/bam/{sample}.bam.bai"
     output:
-        "analysis/mod/{flowcell}/{mode}/{sample}.mod_summary.txt"
+        "analysis/mod/{sample}.mod_summary.txt"
     threads: 8
     resources:
         mem = 10,
         walltime = 12
     log:
-        "logs/modkit/{flowcell}.{mode}.{sample}.summary.log"
+        "logs/modkit/{sample}.summary.log"
     shell:
         """
-        {modkit} summary -t {threads} {input.bam} --log-filepath {log} > {output}
+        modkit summary -t {threads} {input.bam} --log-filepath {log} > {output}
         """
 
 rule bamtohapmod:
     input:
-        hp_tagged_bam = "analysis/bam/{flowcell}/{mode}/{sample}.haplotagged.bam",
-        hp_tagged_bai = "analysis/bam/{flowcell}/{mode}/{sample}.haplotagged.bam.bai",
+        hp_tagged_bam = "analysis/bam/{sample}.haplotagged.bam",
+        hp_tagged_bai = "analysis/bam/{sample}.haplotagged.bam.bai",
         genome = config['reference']['file'],
     output:
-        "analysis/mod/{flowcell}/{mode}/{sample}_1.bed.gz",
-        "analysis/mod/{flowcell}/{mode}/{sample}_2.bed.gz",
-        "analysis/mod/{flowcell}/{mode}/{sample}_1.bed.gz.tbi",
-        "analysis/mod/{flowcell}/{mode}/{sample}_2.bed.gz.tbi",
-        "analysis/mod/{flowcell}/{mode}/{sample}_ungrouped.bed",
+        "analysis/mod/{sample}_1.bed.gz",
+        "analysis/mod/{sample}_2.bed.gz",
+        "analysis/mod/{sample}_1.bed.gz.tbi",
+        "analysis/mod/{sample}_2.bed.gz.tbi",
+        "analysis/mod/{sample}_ungrouped.bed",
     params:
-        outdir = "analysis/mod/{flowcell}/{mode}/",
-        hp1_bed = "analysis/mod/{flowcell}/{mode}/{sample}_1.bed",
-        hp2_bed = "analysis/mod/{flowcell}/{mode}/{sample}_2.bed",
+        outdir =  "analysis/mod/",
+        hp1_bed = "analysis/mod/{sample}_1.bed",
+        hp2_bed = "analysis/mod/{sample}_2.bed",
     threads: 8
     resources:
         mem = 10,
         walltime = 12
     log:
-        "logs/modkit/{flowcell}.{mode}.{sample}.pileup.HP.log"
+        "logs/modkit/{sample}.pileup.HP.log"
     shell:
         """
         modkit pileup {input.hp_tagged_bam} {params.outdir} --ref {input.genome} --partition-tag HP \
