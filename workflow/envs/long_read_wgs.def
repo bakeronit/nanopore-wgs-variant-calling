@@ -1,0 +1,97 @@
+# long_read_wgs_pipeline.def
+Bootstrap: docker
+From: condaforge/mambaforge:latest
+
+%labels
+    Author jia.zhang@qimrb.edu.au
+    Version 1.1
+    Description Tools used in variant detection pipeline using long read sequencing
+
+%files
+    environment.yaml /opt/environment.yaml
+
+%post
+    # Update base conda environment
+    mamba update -n base -c defaults conda -y
+    
+    # Install tools from environment.yaml
+    mamba env update -n base -y -f /opt/environment.yaml
+    
+    # Clean up
+    mamba clean --all --force-pkgs-dirs -y
+
+    # Download nanomonsv misc scripts
+    mkdir -p /opt/nanomonsv_misc/
+    curl -o /opt/nanomonsv_misc/add_simple_repeat.py \
+    https://raw.githubusercontent.com/friend1ws/nanomonsv/refs/heads/master/misc/add_simple_repeat.py
+
+    mkdir -p /opt/nanomonsv_misc/subscript_postprocess_sbnd
+    curl -o /opt/nanomonsv_misc/subscript_postprocess_sbnd/integrate_sbnd.py \
+    https://raw.githubusercontent.com/friend1ws/nanomonsv/refs/heads/master/misc/subscript_postprocess_sbnd/integrate_sbnd.py 
+
+    curl -o /opt/nanomonsv_misc/subscript_postprocess_sbnd/add_simple_repeat_sbnd.py \
+    https://raw.githubusercontent.com/friend1ws/nanomonsv/refs/heads/master/misc/subscript_postprocess_sbnd/add_simple_repeat_sbnd.py
+
+    curl -o /opt/nanomonsv_misc/subscript_postprocess_sbnd/plot_sbnd_vis.R \
+    https://raw.githubusercontent.com/friend1ws/nanomonsv/refs/heads/master/misc/subscript_postprocess_sbnd/plot_sbnd_vis.R
+ 
+    # Create directories for binding
+    mkdir -p /data /scratch /work
+
+%environment
+    export PATH=/opt/conda/bin:/opt/bin/:$PATH
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+
+%runscript
+    echo "╔═════════════════════════════════════════════════════════════════════════╗"
+    echo "║      Long Read Whole Genome Sequencing Variant Calling Container        ║"
+    echo "╚═════════════════════════════════════════════════════════════════════════╝"
+    echo "Available tools:"
+    echo "  - minimap2 $(minimap2 --version)"
+    echo "  - bcftools $(bcftools --version|head -n1)"
+    echo "  - samtools $(samtools --version | head -1)"
+    echo "  - mosdepth $(mosdepth --version)"
+    echo "  - modkit $(modkit --version)"
+    echo "  - chopper $(chopper --version)"
+    echo "  - whatshap $(whatshap --version)"
+    echo "  - delly $(delly --version 2>&1 | head -1)"
+    echo "  - savana $(savana --version |tail -n 1)"
+    echo "  - severus $(severus --version)"
+    echo "  - sniffles $(sniffles --version)"
+    echo "  - nanomonsv $(nanomonsv --version)"
+    echo "  - bwa $(bwa 2>&1|sed -n '3p')"
+    echo "  - racon $(racon --version)"
+    echo "  - mafft $(mafft --version 2>&1)"
+    echo "  - bedtools $(bedtools --version)"
+    echo "  - RepeatMasker $(RepeatMasker -v)"
+    echo "  - Python $(python --version)"
+    echo "  - R $(R --version | head -n 1)"
+
+%test
+    set -e
+    echo "Testing all tools installed"
+     # Test all tools are installed
+    command -v samtools > /dev/null 
+    command -v minimap2 > /dev/null
+    command -v bwa > /dev/null
+    command -v bcftools > /dev/null
+    command -v delly > /dev/null
+    command -v sniffles > /dev/null
+    command -v nanomonsv > /dev/null
+    command -v savana > /dev/null
+    command -v severus > /dev/null
+    command -v chopper > /dev/null
+    command -v mosdepth > /dev/null
+    command -v modkit > /dev/null
+    command -v whatshap > /dev/null
+    command -v racon > /dev/null
+    command -v mafft > /dev/null
+    command -v bedtools > /dev/null
+    command -v RepeatMasker > /dev/null
+    command -v python > /dev/null
+    command -v R > /dev/null
+
+    python -c "import pysam, pybedtools"
+    R --quiet --slave -e "suppressMessages(require(tidyverse)); suppressMessages(require(ggrepel))"
+    echo "All tests passed!"

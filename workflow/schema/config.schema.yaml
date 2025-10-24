@@ -21,11 +21,17 @@ properties:
     description: Analysis mode to run
     enum: ["germline", "somatic", "all"]
     default: "all"
+  
+  container:
+    type: string
+    description: Path to Singularity image (.sif file) or container URI (docker://, library://, shub://)
+    pattern: "^(.*\\.sif$|docker://.*|library://.*|shub://.*|oras://.*)"
+    default: "library://jiazhang/workflows/long_read_wgs_pipeline:1.1"
 
   pull_containers:
     type: boolean
     description: Whether to pull containers (set to false on qimrb cluster)
-    default: false
+    default: true
   
   basecalling_dir:
     description: Root of the work directory for raw data, will set as current directory if None
@@ -44,7 +50,7 @@ properties:
         type: string
         description: Which caller to use for phased SNVs
         enum: ["clair3", "pepper", "deepvariant"]
-        default: "clair3"
+        default: "deepvariant"
       germline:
         type: array
         description: List of germline SNV callers to run
@@ -235,14 +241,5 @@ properties:
         type: boolean
         description: Whether to enable subclone calling, only available for clairS v0.3.0 and later
         default: false
-
-  nanomonsv:
-    type: object
-    description: Nanomonsv configuration
-    properties:
-      misc_scripts_path:
-        type: string
-        description: Path to nanomonsv miscellaneous scripts
-        default: "/opt/nanomonsv_scripts"
 
 additionalProperties: false

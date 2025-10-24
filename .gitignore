@@ -6,4 +6,5 @@ logs/**
 *.log
 nohup.out
 config/*
-!config/config.yaml.template
+!config/config.yaml
+!config/samples.csv

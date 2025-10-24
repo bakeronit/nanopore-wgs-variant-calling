@@ -1,6 +1,6 @@
 executor: cluster-generic
-cluster-generic-submit-cmd: "/mnt/lustre/working/lab_nicw/jiaZ/github/nanopore_paired_tumour_workflow/workflow/profiles/test/pbs-submit.py"
-jobscript: "/mnt/lustre/working/lab_nicw/jiaZ/github/nanopore_paired_tumour_workflow/workflow/profiles/test/pbs-jobscript.sh"
+cluster-generic-submit-cmd: "pbs-submit.py"
+jobscript: "pbs-jobscript.sh"
 cluster-generic-cancel-cmd: "qdel"
 jobs: 500
 use-envmodules: True

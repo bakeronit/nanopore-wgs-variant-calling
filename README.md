@@ -27,19 +27,20 @@ A Snakemake workflow for germline and somatic variant calling from Oxford Nanopo
   - [Analysis Modes](#analysis-modes)
 - [Resource Requirements](#resource-requirements)
   - [Compute Resources](#compute-resources)
-  - [Optimising Workflow Resources](#keep-optimising-the-workflow-resources-requirements)
+  - [Optimising Workflow Resources](#optimising-the-workflow-resources-requsts-on-hpc)
 - [Citation](#citation)
 - [License](#license)
 
 ## Overview
 
-![Workflow rulegraph](images/rulegraph.png?width=600px)
+![Workflow rulegraph](docs/rulegraph.png?width=600px)
 
 This workflow processes Oxford Nanopore long-read WGS sequencing data to identify:
-- **Germline variants**: SNVs and SVs present in normal tissue
-- **Somatic variants**: SNVs and SVs acquired in tumour tissue
-- **Copy number alterations**: Using multiple SV callers
-- **Phased variants**: With haplotagging support
+- **Small variants**: SNVs and indels in tumour and normal tissue
+- **Structural variants**: Structural variants in tumour and normal tissue
+- **Copy number alterations**: Segmental changes in copy number across the genome in tumour tissue
+- **Phased variants**: Haplotype information for germline variants
+- **Methylation**: DNA methylation at CpG sites in tumour and normal tissue
 
 ## Installation and Setup
 
@@ -52,12 +53,15 @@ This workflow processes Oxford Nanopore long-read WGS sequencing data to identif
 ### Container Setup
 
 #### Option 1: Use Pre-built Container (Recommended)
+
 ```bash
-# Download the main workflow container
-apptainer pull library://jiazhang/workflows/long_read_wgs_pipeline:1.0
+apptainer pull library://jiazhang/workflows/long_read_wgs_pipeline:1.1
 ```
 
 #### Option 2: Build Container Locally if new versions are needed
+
+With [environment.yaml](workflow/envs/environment.yaml) and [long_read_wgs.def](workflow/envs/long_read_wgs.def) you can build the container locally.
+
 ```bash
 # Build the container from definition file
 apptainer build long_read_wgs_pipeline.sif long_read_wgs.def
@@ -67,7 +71,8 @@ apptainer build long_read_wgs_pipeline.sif long_read_wgs.def
 
 #### Reference Genome
 
-A constant reference genome and indexed genome is required for all samples.
+A constant reference genome and indexed genome is required for all samples. Note that this pipeline is highly adapted to **GRCh38**.
+
 ```bash
 # Download and index GRCh38 reference
 #https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
@@ -224,6 +229,9 @@ snakemake --report report.html --directory /path/to/project/output --configfile 
 ```
 
 ## Output Structure
+
+Details of the output files can be found in [filegraph](docs/filegraph.png) plot
+
 ```bash
 analysis/
 ├── bam/
@@ -342,17 +350,17 @@ analysis/
 
 | Category | Tool | Purpose | 
 |----------|------|---------|
-| **Trimming** | chopper | Quality and adapter trimming |
-| **Alignment** | minimap2 | Map reads to reference |
-| **QC** | mosdepth, samtools/coverage | Coverage and quality metrics |
-| **Germline SNVs** | deepvariant, whatshap | Call germline variants and phasing |
-| **Somatic SNVs** | clairS, deepsomatic | Call somatic mutations |
-| **Germline SVs** | sniffles | Call structural variants |
-| **Somatic SVs** | nanomonsv, savana, severus | Call somatic SVs |
-| **Methylation** | modkit | DNA methylation calling |
-| **CNVs** | savana | Call copy number alterations |
-| **Merged SVs*** | SSVanalyser, Jasmine | Merge structural variants |
-| **Report*** | multiqc | Generate report |
+| **Trimming** | [chopper](https://github.com/wdecoster/chopper) | Quality and adapter trimming |
+| **Alignment** | [minimap2](https://github.com/lh3/minimap2) | Map reads to reference |
+| **QC** | [mosdepth](https://github.com/brentp/mosdepth), [samtools/coverage](https://github.com/fbreitwieser/bamcov) | Coverage and quality metrics |
+| **Germline SNVs** | [deepvariant](https://github.com/google/deepvariant), [whatshap](https://github.com/whatshap/whatshap) | Call germline variants and phasing |
+| **Somatic SNVs** | [clairS](https://github.com/HKU-BAL/ClairS), [deepsomatic](https://github.com/google/deepsomatic) | Call somatic mutations |
+| **Germline SVs** | [sniffles](https://github.com/fritzsedlazeck/Sniffles) | Call structural variants |
+| **Somatic SVs** | [nanomonsv](https://github.com/friend1ws/nanomonsv), [savana](https://github.com/cortes-ciriano-lab/savana), [severus](https://github.com/KolmogorovLab/Severus) | Call somatic SVs |
+| **Methylation** | [modkit](https://github.com/nanoporetech/modkit) | DNA methylation calling |
+| **CNVs** | [savana](https://github.com/cortes-ciriano-lab/savana) | Call copy number alterations |
+| **Merged SVs*** | [ssvanalyser](https://github.com/bakeronit/SSVAnalyser), [jasmine](https://github.com/mkirsche/Jasmine) | Merge structural variants |
+| **Report*** | [multiqc](https://github.com/MultiQC/MultiQC) | Generate report |
 
 *not yet implemented
 
@@ -377,9 +385,9 @@ set-threads:
   ...
 ```
 
-### Keep Optimising the Workflow Resources Requirements
+### Optimising the Workflow Resources Requsts on HPC
 
-Although Snakemake can do benchmarking of resources used in each jobs in the workflow, the memory tracking is not the same as qstat. At the end of the workflow, you could run `python workflow/scripts/qstat_jobs.py work/` to get a better idea of whether you are requesting too much or too little memory, CPUs, etc. This allows you to optimise your workflow resource requirements.
+Although Snakemake can do benchmarking of resources used in each jobs in the workflow, the memory tracking is not the same as qstat. This workflow provides a script [qstat_jobs.py](workflow/scripts/qstat_jobs.py). At the end of the workflow, you could run `python workflow/scripts/qstat_jobs.py /path/to/work` to get a better idea of whether you are requesting too much or too little memory, CPUs, etc. This allows you to optimise your workflow resource requirements.
 
 **An example of the `qstat_jobs.py` output suggests that I requested too much memory and too many CPUs:**
 ```bash
@@ -405,4 +413,4 @@ If you use this workflow, please cite:
 
 ## License
 
-This workflow is licensed under the MIT License. See `LICENSE` file for details.
+This workflow is licensed under the MIT License. See [LICENSE](LICENSE) file for details.

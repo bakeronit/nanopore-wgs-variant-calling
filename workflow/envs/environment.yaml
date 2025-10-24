@@ -1,0 +1,59 @@
+name: long_read_wgs
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # Core system tools
+  - python=3.10
+  - pip
+  - make
+  - gcc_linux-64
+  - gxx_linux-64
+
+  # System libraries
+  - xz
+  - libcurl
+  - curl
+
+  # Alignment and mapping tools
+  - samtools=1.22.1
+  - minimap2=2.30
+  - bwa=0.7.19
+
+  # Variant calling and SV detection
+  - sniffles=2.6.2
+  - delly=1.3.3
+  - bcftools=1.22
+  - whatshap=2.8
+  - savana=1.3.5
+  - severus=1.5
+  - nanomonsv=0.8.0
+
+  # Long-read specific tools
+  - chopper=0.10.0
+  - ont-modkit=0.5.0
+  - racon=1.5.0
+
+  # Coverage and quality tools
+  - mosdepth=0.3.11
+
+  # Genomic utilities
+  - bedtools=2.31.1
+  - pybedtools=0.12.0
+  - pysam=0.23.3
+
+  # Sequence alignment
+  - mafft=7.526
+
+  # Repeat analysis
+  - repeatmasker=4.1.9
+
+  # R and visualization
+  - r-tidyverse=2.0.0
+  - r-ggrepel=0.9.6
+
+  # pod5 library
+  - pip:
+    - pod5==0.3.34
