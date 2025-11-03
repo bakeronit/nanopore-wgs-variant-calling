@@ -13,18 +13,15 @@ JOB_NAME_REGEX = re.compile(r"snakejob\.(\w+)\.\d+\.sh")
 QSTAT_COMMAND = "qstat -fx -F json"
 PBS_SERVER = "hpcpbs02"
 
-
 def format_memory(mem: str) -> float:
     """Convert memory from KB to GB."""
     mem = int(mem.replace("kb", ""))
     return round(mem / 1024 / 1024, 2)
 
-
 def parse_time(time_str: str) -> timedelta:
     """Parse time string in HH:MM:SS format."""
     h, m, s = map(int, time_str.split(":"))
     return timedelta(hours=h, minutes=m, seconds=s)
-
 
 def calculate_average_cpu(cpu_time: str, walltime_used: str) -> float:
     """Calculate average CPU utilization."""
@@ -48,7 +45,6 @@ def get_wildcards(job_id: str, job_name: str, rundir: Path) -> Optional[str]:
         return None
     return None
 
-
 def parse_job_info(job_info: dict) -> dict:
     """Parse raw PBS job info into structured dictionary."""
     job_name = JOB_NAME_REGEX.search(job_info["Job_Name"]).group(1)
@@ -65,14 +61,12 @@ def parse_job_info(job_info: dict) -> dict:
         "walltime_used": job_info['resources_used']['walltime']
     }
 
-
 def get_jobs_info(job_ids: List[str], rundir: Path) -> List[dict]:
     """Query qstat and retrieve job information."""
     jobs_data = []
     cmd = f"{QSTAT_COMMAND} {' '.join(job_ids)}"
     result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True)
     qstat_json = json.loads(result.stdout)
-
     for job_id in job_ids:
         full_job_id = f"{job_id}.{PBS_SERVER}"
         job_data = parse_job_info(qstat_json["Jobs"][full_job_id])
@@ -86,7 +80,6 @@ def print_table_simple(jobs_data: List[dict]) -> None:
     if not jobs_data:
         print("No job data to display")
         return
-    
     headers = {
         "job_id": ("Job ID", 25),
         "wildcards": ("Wildcards", 25),
@@ -120,7 +113,6 @@ def print_table_simple(jobs_data: List[dict]) -> None:
             row += f"{value:<{width}} "
         print(row)
 
-
 def print_table_tabulate(jobs_data: List[dict]) -> None:
     """Print job data using tabulate library."""
     try:
@@ -129,67 +121,54 @@ def print_table_tabulate(jobs_data: List[dict]) -> None:
         if not jobs_data:
             print("No job data to display")
             return
-
         headers = [
             "job_id", "job_name", "wildcards","exec_host", 
             "cpu_request", "cpu_max", "cpu_average",
             "mem_request", "mem_used", 
             "walltime_request", "walltime_used"
         ]
-        
         table_data = []
         for job in jobs_data:
             row = [job.get(h, "") for h in headers]
             table_data.append(row)
-        
         pretty_headers = [
             "Job ID", "Job Name", "Wildcards", "Host", 
             "CPU Req", "CPU Max", "CPU Avg",
             "Mem Req(GB)", "Mem Used(GB)", 
             "Time Req", "Time Used"
         ]
-        
         print(tabulate(table_data, headers=pretty_headers, tablefmt="grid"))
         
     except ImportError:
         print("tabulate library not found. Using simple table format instead.")
         print_table_simple(jobs_data)
 
-
 def print_summary_stats(jobs_data: List[dict]) -> None:
     """Print summary statistics of the jobs."""
     if not jobs_data:
         return
-    
     print("\n" + "="*60)
     print("SUMMARY STATISTICS")
     print("="*60)
-    
     total_jobs = len(jobs_data)
     avg_cpu_usage = sum(job['cpu_average'] for job in jobs_data) / total_jobs
     max_cpu_usage = max(job['cpu_max'] for job in jobs_data)
     avg_mem_usage = sum(job['mem_used'] for job in jobs_data) / total_jobs
     max_mem_usage = max(job['mem_used'] for job in jobs_data)
-    
     print(f"Total Jobs: {total_jobs}")
     print(f"Average CPU Usage: {avg_cpu_usage:.2f}")
     print(f"Max CPU Usage: {max_cpu_usage:.2f}")
     print(f"Average Memory Usage: {avg_mem_usage:.2f} GB")
     print(f"Max Memory Usage: {max_mem_usage:.2f} GB")
-    
-    # Group by job name
     job_groups = {}
     for job in jobs_data:
         name = job['job_name']
         if name not in job_groups:
             job_groups[name] = []
         job_groups[name].append(job)
-    
     print(f"\nJobs by Type:")
     for name, jobs in sorted(job_groups.items()):
         print(f"  {name}: {len(jobs)} jobs")
-
-
 
 def main():
     """Main entry point."""
@@ -212,37 +191,26 @@ def main():
         default='job_name',
         help='Sort jobs by field (default: job_name)'
     )
-
     args = parser.parse_args()
-
     if not args.rundir.exists():
         print(f"Error: Directory not found: {args.rundir}", file=sys.stderr)
         sys.exit(1)
 
-    # Find job IDs from error files from snakemake pipeline
+    # find job ids from error files from snakemake pipeline
     job_ids = [fn.suffix[2:] for fn in args.rundir.glob("snakejob.*.sh.e*")]
-
     if not job_ids:
         print(f"Error: No job files found in {args.rundir}", file=sys.stderr)
         sys.exit(1)
-
     print(f"Found {len(job_ids)} jobs in {args.rundir}")
-
     try:
         jobs_data = get_jobs_info(job_ids, args.rundir)
     except Exception as e:
         print(f"Error querying jobs: {e}", file=sys.stderr)
         sys.exit(1)
-
-    # Sort jobs
     jobs_data.sort(key=lambda x: x.get(args.sort, ''))
-
-    # Display results
     print_table_tabulate(jobs_data)
-
     if args.summary:
         print_summary_stats(jobs_data)
-
 
 if __name__ == "__main__":
     main()

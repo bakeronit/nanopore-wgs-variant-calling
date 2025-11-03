@@ -1,6 +1,6 @@
 additional_snakemake_args: []
 logo: QIMRB
-tagline: "Variant calling for nanpore sequencing data"
+tagline: "Variant calling for nanopore long read sequencing data"
 commands:
 - run
 - script

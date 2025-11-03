@@ -140,7 +140,8 @@ Edit `config/config.yaml`:
 ```yaml
 # Sample and analysis configuration
 samples: /path/to/samples.csv
-run_mode: "all"
+run_mode: all
+container: /path/to/long_read_wgs_pipeline.sif # path to container or library url
 pull_containers: false # if running on qimrb cluster, no need to pull containers
 basecalling_dir: /path/to/work_dir/to/basecalling_pipeline
 
@@ -195,9 +196,6 @@ clairS:
   platform: ont_r10_dorado_sup_5khz
   indel_calling: true
   subclone: true  # this enable subclone variant detection
-
-nanomonsv:
-  misc_scripts_path: /path/to/nanomonsv_misc_scripts
 ```
 
 ## Usage
@@ -209,14 +207,14 @@ git clone https://github.com/bakeronit/nanopore_paired_tumour_workflow.git
 cd nanopore_paired_tumour_workflow
 
 # Configure workflow parameters
-cp config/config.yaml.template config/config.yaml
+vi config/config.yaml
 # Edit config.yaml with your paths and settings
 
 # Check commands are valid using dry-run
 snakemake --configfile config/config.yaml --directory /path/to/project/output --dry-run
 
 # Run the workflow
-nohup snakemake --configfile config/config.yaml --directory /path/to/project/output --profile workflow/profiles/pbspro &
+nohup snakemake --configfile config/config.yaml --directory /path/to/project/output --profile $PWD/workflow/profiles/pbspro &
 ```
 
 ### Monitoring Progress (Optional)
